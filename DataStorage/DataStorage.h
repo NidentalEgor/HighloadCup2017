@@ -4,39 +4,51 @@
 
 #include <string>
 #include <unordered_map>
+#include <memory>
 
 #include "Location.h"
 #include "User.h"
 #include "Visit.h"
 #include "DataTypes.h"
 
-// template<Location>
-// struct EntitiesName
-// {
-//     const std::string entities_name = "locations";
-// };
-
-// template<User>
-// struct EntitiesName
-// {
-//     const std::string entities_name = "users";
-// };
-
-// template<Visit>
-// struct EntitiesName
-// {
-//     const std::string entities_name = "visits";
-// };
-
 template <typename T>
 using Container = std::unordered_map<uint32_t, T>;
+using MappedIndexes = std::unordered_map<uint32_t, uint32_t>;
+using MappedMultiIndexes = std::unordered_multimap<uint32_t, uint32_t>;
 
 class DataStorage
 {
 public:
     void LoadData(
             const std::string& folder_path);
+
+    void MapEntities();
+    
+    std::unique_ptr<std::string> GetLocationById(
+            const uint32_t location_id);
+
+    std::unique_ptr<std::string> GetVisistsByUserId(
+            const uint32_t user_id,
+            const Timestamp from_date = -1,
+            const Timestamp to_date = -1,
+            const std::string& country = "",
+            const uint32_t to_distance = 0);
+    ///
+    void DumpData();
+    ///
+
 private:
+    enum class EntityType
+    {
+        Location,
+        User,
+        Visit
+    };
+
+    std::unique_ptr<std::string> GetEntityById(
+            const uint32_t entity_id,
+            EntityType entity_type);
+
     template <typename T>
     void ParseFile(
             const std::string& file_path,
@@ -47,6 +59,9 @@ private:
     Container<Location> locations_;
     Container<User> users_;
     Container<Visit> visits_;
+    MappedIndexes visites_to_locations_;
+    MappedIndexes visites_to_users_;
+    MappedMultiIndexes users_to_visits_;
 };
 
 #endif // DATA_STORAGE_H_INCLUDED

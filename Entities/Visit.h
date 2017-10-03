@@ -11,11 +11,9 @@ using Mark = short;
 
 class Visit
     : public Identifiable
-    // , public IDeserializable
+    , public IDeserializable
 {
 public:
-    // /*template<typename T>*/ using entities_name = EntitiesName<T>.entities_name;
-
     Visit(
         const uint32_t id,
         const uint32_t location_id,
@@ -25,12 +23,13 @@ public:
 
     Visit();
 
-    // void Deserialize(
-    //         const rapidjson::Value& visit_element) override final;
+    void Deserialize(
+            const rapidjson::Value& visit_element) override final;
 
-    Visit(const rapidjson::Value& visit_element);
+    // Visit(const rapidjson::Value& visit_element);
 
-private:
+// private:
+public:
     uint32_t location_id_;
     uint32_t user_id_;
     Timestamp timestamp_;

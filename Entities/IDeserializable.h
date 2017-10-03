@@ -7,6 +7,10 @@
 class IDeserializable
 {
 public:
+    virtual ~IDeserializable()
+    {
+    };
+
     virtual void Deserialize(
             const rapidjson::Value& user_element) = 0;
 };

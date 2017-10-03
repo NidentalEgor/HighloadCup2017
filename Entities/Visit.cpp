@@ -14,17 +14,31 @@ Visit::Visit(
 {
 }
 
-Visit::Visit(
-        const rapidjson::Value& visit_element)
-    : Identifiable(visit_element["id"].GetInt())
-    , location_id_(visit_element["location"].GetInt())
-    , user_id_(visit_element["user"].GetInt())
-    , timestamp_(visit_element["visited_at"].GetInt())
-    , mark_(visit_element["mark"].GetInt())
+Visit::Visit()
+    : Identifiable(0)
+    , location_id_(0)
+    , user_id_(0)
+    , timestamp_(0)
+    , mark_(0)
 {
-
 }
 
-Visit::Visit()
+// Visit::Visit(
+//         const rapidjson::Value& visit_element)
+//     : Identifiable(visit_element["id"].GetInt())
+//     , location_id_(visit_element["location"].GetInt())
+//     , user_id_(visit_element["user"].GetInt())
+//     , timestamp_(visit_element["visited_at"].GetInt())
+//     , mark_(visit_element["mark"].GetInt())
+// {
+// }
+
+void Visit::Deserialize(
+        const rapidjson::Value& visit_element)
 {
+    id_ = visit_element["id"].GetInt();
+    location_id_ = visit_element["location"].GetInt();
+    user_id_ = visit_element["user"].GetInt();
+    timestamp_ = visit_element["visited_at"].GetInt();
+    mark_ = visit_element["mark"].GetInt();
 }

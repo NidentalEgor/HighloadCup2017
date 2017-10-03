@@ -3,11 +3,15 @@
 #pragma once
 
 #include <string>
+#include <memory>
 
 #include "rapidjson/document.h"
 #include "Identifiable.h"
+#include "IDeserializable.h"
 
-class Location : public Identifiable
+class Location
+    : public Identifiable
+    , public IDeserializable
 {
 public:
     Location(
@@ -16,8 +20,15 @@ public:
         const std::string& country,
         const std::string& city,
         const uint32_t distance);
+    
+    Location();
 
-    Location(const rapidjson::Value& location_element);
+    // Location(const rapidjson::Value& location_element);
+
+    void Deserialize(
+            const rapidjson::Value& location_element) override final;
+
+    std::unique_ptr<std::string> Serialize() const;
 
 private:
     std::string place_;

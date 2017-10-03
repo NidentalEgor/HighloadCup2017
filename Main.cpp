@@ -9,6 +9,7 @@ int main(int argc, char* argv[])
     DataStorage data_storage;
     data_storage.LoadData(
             "/home/egor/Repositories/hlcupdocs/data/TRAIN/data/");
-    
+    data_storage.MapEntities();
+    data_storage.DumpData();
     return 0;
 }

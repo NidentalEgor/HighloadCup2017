@@ -16,13 +16,34 @@ User::User(
 {
 }
 
-User::User(
-        const rapidjson::Value& user_element)
-    : Identifiable(user_element["id"].GetInt())
-    , email_(user_element["email"].GetString())
-    , first_name_(user_element["first_name"].GetString())
-    , last_name_(user_element["last_name"].GetString())
-    , gender_(user_element["gender"].GetString() == "m" ? Gender::Male : Gender::Female)
-    , timestamp_(user_element["timestamp"].GetInt())
+User::User()
+    : Identifiable(0)
+    , email_()
+    , first_name_()
+    , last_name_()
+    , gender_()
+    , timestamp_(0)
 {
+}
+
+// User::User(
+//         const rapidjson::Value& user_element)
+//     : Identifiable(user_element["id"].GetInt())
+//     , email_(user_element["email"].GetString())
+//     , first_name_(user_element["first_name"].GetString())
+//     , last_name_(user_element["last_name"].GetString())
+//     , gender_(user_element["gender"].GetString() == "m" ? Gender::Male : Gender::Female)
+//     , timestamp_(user_element["timestamp"].GetInt())
+// {
+// }
+
+void User::Deserialize(
+        const rapidjson::Value& user_element)
+{
+    id_ = user_element["id"].GetInt();
+    email_ = user_element["email"].GetString();
+    first_name_ = user_element["first_name"].GetString();
+    last_name_ = user_element["last_name"].GetString();
+    gender_ = user_element["gender"].GetString() == "m" ? Gender::Male : Gender::Female;
+    timestamp_ = user_element["timestamp"].GetInt();
 }

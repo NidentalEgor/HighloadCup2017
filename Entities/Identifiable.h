@@ -19,7 +19,8 @@ public:
         return id_;
     };
 
-protected:
+// protected:
+public:
     uint32_t id_;
 };
 

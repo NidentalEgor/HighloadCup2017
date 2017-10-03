@@ -7,6 +7,7 @@
 #include "rapidjson/document.h"
 #include "Identifiable.h"
 #include "DataTypes.h"
+#include "IDeserializable.h"
 
 enum class Gender
 {
@@ -14,7 +15,9 @@ enum class Gender
     Female
 };
 
-class User : public Identifiable
+class User
+    : public Identifiable
+    , public IDeserializable
 {
 public:
     User(
@@ -24,8 +27,13 @@ public:
         const std::string& last_name,
         const Gender gender,
         const Timestamp timestamp);
+    
+    User();
 
-    User(const rapidjson::Value& user_element);
+    // User(const rapidjson::Value& user_element);
+
+    void Deserialize(
+            const rapidjson::Value& user_element) override final;
     
 private:
     std::string email_;

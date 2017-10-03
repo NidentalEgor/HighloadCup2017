@@ -7,11 +7,12 @@ set(SERVER_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 # set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # set(CMAKE_CXX_EXTENSIONS OFF)
 # set(CMAKE_CXX_STANDARD 14)
-SET(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} "-std=c++17 -pthread")
+SET(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} "-std=c++14 -pthread")
 
 include_directories(${SERVER_DIR}/DataStorage)
 include_directories(${SERVER_DIR}/Entities)
 include_directories(${SERVER_DIR}/HttpServer)
+include_directories(${SERVER_DIR}/Utils)
 include_directories(${SERVER_DIR}/Submodules/rapidjson/include)
 
 # SET(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} "-pthread")
@@ -20,7 +21,8 @@ file(GLOB SERVER_SOURCES
     ${SERVER_DIR}/*.cpp
     ${SERVER_DIR}/DataStorage/*.cpp
     ${SERVER_DIR}/Entities/*.cpp
-    ${SERVER_DIR}/HttpServer/*.cpp)
+    ${SERVER_DIR}/HttpServer/*.cpp
+    ${SERVER_DIR}/Utils/*.h)
 
 add_executable(server ${SERVER_SOURCES})
 
