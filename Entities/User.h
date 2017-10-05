@@ -8,6 +8,7 @@
 #include "Identifiable.h"
 #include "DataTypes.h"
 #include "IDeserializable.h"
+#include "Visit.h"
 
 enum class Gender
 {
@@ -41,6 +42,8 @@ private:
     std::string last_name_;
     Gender gender_;
     Timestamp timestamp_;
+
+    // std::set<uint32_t, VisitSorterByDate> visits_id_;
 };
 
 #endif // USER_H_INCLUDED

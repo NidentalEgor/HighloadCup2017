@@ -13,6 +13,7 @@ include_directories(${SERVER_DIR}/DataStorage)
 include_directories(${SERVER_DIR}/Entities)
 include_directories(${SERVER_DIR}/HttpServer)
 include_directories(${SERVER_DIR}/Utils)
+include_directories(${SERVER_DIR}/Tests)
 include_directories(${SERVER_DIR}/Submodules/rapidjson/include)
 
 # SET(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} "-pthread")

@@ -33,6 +33,17 @@ Visit::Visit()
 // {
 // }
 
+bool Visit::operator<(const Visit& right) const
+{
+    return timestamp_ < right.timestamp_;
+}
+
+bool Visit::operator<(
+        const Timestamp& right) const
+{
+    return timestamp_ < right;    
+}
+
 void Visit::Deserialize(
         const rapidjson::Value& visit_element)
 {

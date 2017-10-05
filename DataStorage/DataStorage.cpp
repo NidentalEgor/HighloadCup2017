@@ -100,7 +100,8 @@ void DataStorage::MapEntities()
             user != users_.end())
         {
             visites_to_locations_.emplace(visit.first, location->first);
-            visites_to_locations_.emplace(visit.first, user->first);
+            visites_to_users_.emplace(visit.first, user->first);
+            users_to_visits_[user->first].emplace(visit.second.timestamp_, visit.first);
         }
         else
         {
@@ -155,10 +156,58 @@ std::unique_ptr<std::string> DataStorage::GetVisistsByUserId(
         const std::string& country,
         const uint32_t to_distance)
 {
-    const auto range =
-            users_to_visits_.equal_range(user_id);
+    const auto visits_iterator =
+            users_to_visits_.find(user_id);
     
-    ENSURE_TRUE_OTHERWISE_RETURN(range.first != users_to_visits_.end(), nullptr)
+    ENSURE_TRUE_OTHERWISE_RETURN(visits_iterator != users_to_visits_.end(), nullptr)
+
+    auto visits = visits_iterator->second;
+
+    if (from_date != -1)
+    {
+        const auto first_suitable_visit =
+                visits.upper_bound(from_date);
+
+        visits.erase(visits.begin(), first_suitable_visit);
+    }
+
+    if (to_date != -1)
+    {
+        const auto last_suitable_visit =
+                visits.upper_bound(to_date);
+
+        visits.erase(last_suitable_visit, visits.end());
+    }
+
+    // Distance == 0?
+    if (country != "" || to_distance != 0)
+    {
+        for (auto visit_description = visits.begin()
+            ; visit_description != visits.end()
+            ; ++visit_description)
+        {
+            // May be remove?
+            const auto visit = visits_.find(visit_description->second);
+            ENSURE_TRUE_OTHERWISE_CONTINUE(visit != visits_.end())
+            //
+
+            const auto location = locations_.find(visit->second.location_id_);
+            ENSURE_TRUE_OTHERWISE_CONTINUE(location != locations_.end())
+
+            if (country != "" && location->second.country_ != country)
+            {
+                visit_description =
+                        visits.erase(visit_description);
+            }
+
+            // Distance == 0?
+            if (to_distance != 0 && location->second.distance_ < to_distance)
+            {
+                visit_description =
+                        visits.erase(visit_description);
+            }
+        }
+    }
 }
 
 ///

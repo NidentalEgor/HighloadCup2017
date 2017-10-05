@@ -28,6 +28,12 @@ public:
 
     // Visit(const rapidjson::Value& visit_element);
 
+    bool operator<(
+            const Visit& right) const;
+
+    bool operator<(
+            const Timestamp& right) const;
+    
 // private:
 public:
     uint32_t location_id_;
@@ -35,5 +41,15 @@ public:
     Timestamp timestamp_;
     Mark mark_;
 };
+
+// struct VisitSorterByDate
+// {
+//     bool operator()(
+//             const Visit& left,
+//             const Visit& right)
+//     {
+//         return left.timestamp < right.time
+//     }
+// };
 
 #endif // VISIT_H_INCLUDED

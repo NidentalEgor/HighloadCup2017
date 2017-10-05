@@ -4,6 +4,8 @@
 
 #include <string>
 #include <unordered_map>
+// #include <set>
+#include <map>
 #include <memory>
 
 #include "Location.h"
@@ -11,13 +13,27 @@
 #include "Visit.h"
 #include "DataTypes.h"
 
-template <typename T>
-using Container = std::unordered_map<uint32_t, T>;
-using MappedIndexes = std::unordered_map<uint32_t, uint32_t>;
-using MappedMultiIndexes = std::unordered_multimap<uint32_t, uint32_t>;
+
 
 class DataStorage
 {
+// public:
+//     class VisitSorterByDate
+//     {
+//     public:
+//         bool operator()(
+//         const uint32_t left_id,
+//         const uint32_t right_id)
+//         {
+//             return visits_[left_id].timestamp_ < visits_[right_id].timestamp_;
+//         }
+//     };
+    
+    template <typename T>
+    using Container = std::unordered_map<uint32_t, T>;
+    using MappedIndexes = std::unordered_map<uint32_t, uint32_t>;
+    using MappedMultiIndexes = std::unordered_map<uint32_t, std::map<Timestamp, uint32_t>>;    
+
 public:
     void LoadData(
             const std::string& folder_path);
@@ -32,7 +48,7 @@ public:
             const Timestamp from_date = -1,
             const Timestamp to_date = -1,
             const std::string& country = "",
-            const uint32_t to_distance = 0);
+            const uint32_t to_distance = 0); // think
     ///
     void DumpData();
     ///

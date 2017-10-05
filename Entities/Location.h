@@ -30,7 +30,8 @@ public:
 
     std::unique_ptr<std::string> Serialize() const;
 
-private:
+// private:
+public:
     std::string place_;
     std::string country_;
     std::string city_;
