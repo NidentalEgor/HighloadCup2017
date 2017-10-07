@@ -1,5 +1,4 @@
 #include <dirent.h>
-// #include <experimental/filesystem>
 #include <iostream>
 
 #include "Macroses.h"
@@ -46,6 +45,8 @@ void DataStorage::LoadData(const std::string& folder_path)
         perror ("");
         ///
     }
+
+    MapEntities();
 }
 
 template <typename T>
@@ -84,7 +85,7 @@ void DataStorage::ParseFile(
     }
 
     ///
-    std::cout << "Container size = " << container.size() << std::endl;
+    // std::cout << "Container size = " << container.size() << std::endl;
     ///
 }
 
@@ -95,13 +96,13 @@ void DataStorage::MapEntities()
         const auto location =
                 locations_.find(visit.second.location_id_);
         const auto user =
-                users_.find(visit.second.id_);
+                users_.find(visit.second.user_id_);
         if (location != locations_.end() &&
             user != users_.end())
         {
             visites_to_locations_.emplace(visit.first, location->first);
             visites_to_users_.emplace(visit.first, user->first);
-            users_to_visits_[user->first].emplace(visit.second.timestamp_, visit.first);
+            users_to_visits_[user->first].emplace(visit.second.visited_at_, visit.first);
         }
         else
         {
@@ -117,36 +118,32 @@ void DataStorage::MapEntities()
 std::unique_ptr<std::string> DataStorage::GetLocationById(
         const uint32_t location_id)
 {
-    return GetEntityById(location_id, EntityType::Location);
+    return GetEntityById<Location>(location_id, locations_);
 }
 
+std::unique_ptr<std::string> DataStorage::GetUserById(
+        const uint32_t user_id)
+{
+    return GetEntityById<User>(user_id, users_);
+}
+
+std::unique_ptr<std::string> DataStorage::GetVisitById(
+        const uint32_t visit_id)
+{
+    return GetEntityById<Visit>(visit_id, visits_);
+}
+
+template <typename T>
 std::unique_ptr<std::string> DataStorage::GetEntityById(
         const uint32_t entity_id,
-        EntityType entity_type)
+        const Container<T>& entities)
 {
-    switch (entity_type)
-    {
-        case EntityType::Location:
-        {
-            const auto location = locations_.find(entity_id);
+    const auto entity = entities.find(entity_id);
             
-            return
-                location == locations_.end()
-                ? nullptr
-                : std::make_unique<std::string>(*location->second.Serialize());
-                
-        } break;
-
-        case EntityType::User:
-        {
-
-        } break;
-
-        case EntityType::Visit:
-        {
-
-        } break;
-    }
+    return
+        entity == entities.end()
+        ? nullptr
+        : std::make_unique<std::string>(*entity->second.Serialize());
 }
 
 std::unique_ptr<std::string> DataStorage::GetVisistsByUserId(
@@ -156,10 +153,12 @@ std::unique_ptr<std::string> DataStorage::GetVisistsByUserId(
         const std::string& country,
         const uint32_t to_distance)
 {
+    ENSURE_TRUE_OTHERWISE_RETURN(users_.find(user_id) != users_.end(), nullptr);
+
     const auto visits_iterator =
             users_to_visits_.find(user_id);
     
-    ENSURE_TRUE_OTHERWISE_RETURN(visits_iterator != users_to_visits_.end(), nullptr)
+    ENSURE_TRUE_OTHERWISE_RETURN(visits_iterator != users_to_visits_.end(), nullptr);
 
     auto visits = visits_iterator->second;
 
@@ -208,6 +207,21 @@ std::unique_ptr<std::string> DataStorage::GetVisistsByUserId(
             }
         }
     }
+
+    std::string result(R"({"visits":[)");
+    for (const auto visit_description : visits)
+    {
+        result += *visits_[visit_description.second].Serialize();
+        result += ',';
+    }
+
+    if (!visits.empty())
+    {
+        result.pop_back();
+    }
+
+    result += "]}";
+    return std::make_unique<std::string>(result);
 }
 
 ///

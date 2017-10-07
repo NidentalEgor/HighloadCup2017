@@ -23,4 +23,5 @@ add_library(GoogleTest ${GOOGLE_TEST_SOURCE})
 
 target_link_libraries(GoogleTest ${CMAKE_THREAD_LIBS_INIT})
 
+add_definitions(-DRAPIDJSON_HAS_CXX11_RVALUE_REFS)
 add_subdirectory(rapidjson)

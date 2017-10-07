@@ -1,40 +1,26 @@
-cmake_minimum_required (VERSION 3.1)
+cmake_minimum_required (VERSION 3.5)
 project (HighloadCup2017)
 
 set(SERVER_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 
-# set(CMAKE_CXX_STANDARD 17)
-# set(CMAKE_CXX_STANDARD_REQUIRED ON)
-# set(CMAKE_CXX_EXTENSIONS OFF)
-# set(CMAKE_CXX_STANDARD 14)
 SET(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} "-std=c++14 -pthread")
 
+# temp
 include_directories(${SERVER_DIR}/DataStorage)
-include_directories(${SERVER_DIR}/Entities)
-include_directories(${SERVER_DIR}/HttpServer)
-include_directories(${SERVER_DIR}/Utils)
-include_directories(${SERVER_DIR}/Tests)
 include_directories(${SERVER_DIR}/Submodules/rapidjson/include)
+include_directories(${SERVER_DIR}/Utils)
+# temp
 
-# SET(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} "-pthread")
+# include_directories(${SERVER_DIR}/HttpServer)
 
-file(GLOB SERVER_SOURCES
-    ${SERVER_DIR}/*.cpp
-    ${SERVER_DIR}/DataStorage/*.cpp
-    ${SERVER_DIR}/Entities/*.cpp
-    ${SERVER_DIR}/HttpServer/*.cpp
-    ${SERVER_DIR}/Utils/*.h)
+file(GLOB SERVER_SOURCES ${SERVER_DIR}/*.cpp)
 
 add_executable(server ${SERVER_SOURCES})
 
-add_definitions(-DRAPIDJSON_HAS_CXX11_RVALUE_REFS)
 add_subdirectory(Submodules)
-# add_subdirectory(HttpServer)
-# add_subdirectory(Entities)
-# add_subdirectory(DataStarage)
+add_subdirectory(DataStorage)
+add_subdirectory(Tests)
 
-# set_target_properties(server PROPERTIES
-# CXX_STANDARD 17
-# CXX_STANDARD_REQUIRED YES
-# CXX_EXTENSIONS NO
-# )
+target_link_libraries(server data_storage)
+
+

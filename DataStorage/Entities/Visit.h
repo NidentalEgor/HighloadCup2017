@@ -5,6 +5,7 @@
 #include "rapidjson/document.h"
 #include "Identifiable.h"
 #include "DataTypes.h"
+#include "ISerializable.h"
 #include "IDeserializable.h"
 
 using Mark = short;
@@ -12,19 +13,22 @@ using Mark = short;
 class Visit
     : public Identifiable
     , public IDeserializable
+    , public ISerializable
 {
 public:
     Visit(
         const uint32_t id,
         const uint32_t location_id,
         const uint32_t user_id,
-        const Timestamp timestamp,
+        const Timestamp visited_at,
         const Mark mark);
 
     Visit();
 
     void Deserialize(
             const rapidjson::Value& visit_element) override final;
+
+    std::unique_ptr<std::string> Serialize() const override final;
 
     // Visit(const rapidjson::Value& visit_element);
 
@@ -38,7 +42,7 @@ public:
 public:
     uint32_t location_id_;
     uint32_t user_id_;
-    Timestamp timestamp_;
+    Timestamp visited_at_;
     Mark mark_;
 };
 

@@ -4,31 +4,17 @@
 
 #include <string>
 #include <unordered_map>
-// #include <set>
 #include <map>
 #include <memory>
 
-#include "Location.h"
-#include "User.h"
-#include "Visit.h"
-#include "DataTypes.h"
-
-
+#include "Entities/Location.h"
+#include "Entities/User.h"
+#include "Entities/Visit.h"
+#include "Entities/DataTypes.h"
 
 class DataStorage
 {
-// public:
-//     class VisitSorterByDate
-//     {
-//     public:
-//         bool operator()(
-//         const uint32_t left_id,
-//         const uint32_t right_id)
-//         {
-//             return visits_[left_id].timestamp_ < visits_[right_id].timestamp_;
-//         }
-//     };
-    
+public:
     template <typename T>
     using Container = std::unordered_map<uint32_t, T>;
     using MappedIndexes = std::unordered_map<uint32_t, uint32_t>;
@@ -37,11 +23,30 @@ class DataStorage
 public:
     void LoadData(
             const std::string& folder_path);
-
-    void MapEntities();
     
+    size_t GetLocationsAmount()
+    {
+        return locations_.size();
+    }
+
+    size_t GetVisitsAmount()
+    {
+        return visits_.size();
+    }
+
+    size_t GetUsersAmount()
+    {
+        return users_.size();
+    }
+
     std::unique_ptr<std::string> GetLocationById(
             const uint32_t location_id);
+
+    std::unique_ptr<std::string> GetUserById(
+            const uint32_t user_id);
+
+    std::unique_ptr<std::string> GetVisitById(
+            const uint32_t visit_id);
 
     std::unique_ptr<std::string> GetVisistsByUserId(
             const uint32_t user_id,
@@ -54,16 +59,12 @@ public:
     ///
 
 private:
-    enum class EntityType
-    {
-        Location,
-        User,
-        Visit
-    };
+    void MapEntities();
 
+    template <typename T>
     std::unique_ptr<std::string> GetEntityById(
             const uint32_t entity_id,
-            EntityType entity_type);
+            const Container<T>& entities);
 
     template <typename T>
     void ParseFile(

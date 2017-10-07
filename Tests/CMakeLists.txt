@@ -1,8 +1,12 @@
 enable_testing()
 
-include_directories(
-  ${PROJECT_SOURCE_DIR}/Submodules/googletest/googletest/include)
-  
-add_executable(Tests DataStorageTests/EntitiesGettingtests.cpp)
+include_directories(${PROJECT_SOURCE_DIR}/Submodules/googletest/googletest/include)
+include_directories(${PROJECT_SOURCE_DIR}/DataStorage)
 
-target_link_libraries(Tests GoogleTest)
+MESSAGE(STATUS "EGOR EGOR EGOR")
+
+file(GLOB TEST_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/DataStorageTests/*.cpp)
+
+add_executable(Tests ${TEST_SOURCES})
+
+target_link_libraries(Tests GoogleTest data_storage)

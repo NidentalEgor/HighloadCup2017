@@ -1,4 +1,4 @@
-#include "HttpServer.h"
+// #include "HttpServer.h"
 #include "DataStorage.h"
 
 int main(int argc, char* argv[])
@@ -10,8 +10,8 @@ int main(int argc, char* argv[])
 
     DataStorage data_storage;
     data_storage.LoadData(
-            "/home/egor/Repositories/hlcupdocs/data/TRAIN/data/");
-    data_storage.MapEntities();
+            //"/home/egor/Repositories/hlcupdocs/data/TRAIN/data/");
+            "/home/egor/Repositories/HighloadCup2017/Tests/DataStorageTests/TestData/ReadData/");
     data_storage.DumpData();
     return 0;
 }

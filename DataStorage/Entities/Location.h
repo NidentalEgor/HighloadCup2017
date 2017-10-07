@@ -7,11 +7,13 @@
 
 #include "rapidjson/document.h"
 #include "Identifiable.h"
+#include "ISerializable.h"
 #include "IDeserializable.h"
 
 class Location
     : public Identifiable
     , public IDeserializable
+    , public ISerializable
 {
 public:
     Location(
@@ -28,7 +30,7 @@ public:
     void Deserialize(
             const rapidjson::Value& location_element) override final;
 
-    std::unique_ptr<std::string> Serialize() const;
+    std::unique_ptr<std::string> Serialize() const override final;
 
 // private:
 public:
