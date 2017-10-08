@@ -1,7 +1,5 @@
 set(GOOGLE_TEST_ROOT Submodules/googletest/googletest)
 
-MESSAGE(STATUS "EGOR EGOR EGOR EGOR EGOR " ${GOOGLE_TEST_ROOT})
-
 include_directories(
   ${PROJECT_SOURCE_DIR}/${GOOGLE_TEST_ROOT}
   ${PROJECT_SOURCE_DIR}/${GOOGLE_TEST_ROOT}/include)
@@ -24,4 +22,5 @@ add_library(GoogleTest ${GOOGLE_TEST_SOURCE})
 target_link_libraries(GoogleTest ${CMAKE_THREAD_LIBS_INIT})
 
 add_definitions(-DRAPIDJSON_HAS_CXX11_RVALUE_REFS)
+# add_definitions(-DRAPIDJSON_HAS_STDSTRING)
 add_subdirectory(rapidjson)

@@ -18,7 +18,7 @@ public:
     template <typename T>
     using Container = std::unordered_map<uint32_t, T>;
     using MappedIndexes = std::unordered_map<uint32_t, uint32_t>;
-    using MappedMultiIndexes = std::unordered_map<uint32_t, std::map<Timestamp, uint32_t>>;    
+    using MappedMultiIndexes = std::unordered_map<uint32_t, std::multimap<Timestamp, uint32_t>>;
 
 public:
     void LoadData(

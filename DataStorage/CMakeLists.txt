@@ -2,7 +2,6 @@ cmake_minimum_required(VERSION 3.5)
 
 set(DATA_STORAGE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 
-# MESSAGE(STATUS "EGOR EGOR EGOR LIST OF DIRS")
 # get_property(dirs DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY INCLUDE_DIRECTORIES)
 # foreach(dir ${dirs})
 #   message(STATUS "dir='${dir}'")

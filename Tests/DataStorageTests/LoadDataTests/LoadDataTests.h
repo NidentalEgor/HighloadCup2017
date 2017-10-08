@@ -13,8 +13,8 @@ protected:
     void AssertEntitiesAmount(const size_t entities_amount)
     {
         ASSERT_EQ(data_storage_.GetLocationsAmount(), entities_amount);
-        ASSERT_EQ(data_storage_.GetVisitsAmount(),entities_amount);
-        ASSERT_EQ(data_storage_.GetUsersAmount(),entities_amount);
+        ASSERT_EQ(data_storage_.GetVisitsAmount(), entities_amount);
+        ASSERT_EQ(data_storage_.GetUsersAmount(), entities_amount);
     }
 
 protected:

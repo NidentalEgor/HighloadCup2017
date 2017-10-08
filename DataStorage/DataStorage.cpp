@@ -57,10 +57,6 @@ void DataStorage::ParseFile(
 {
     using namespace rapidjson;
 
-    ///
-    std::cout << file_path << std::endl;
-    ///
-    
     FILE* file =
     fopen(file_path.c_str(), "r");
     char buffer[65536];
@@ -83,10 +79,6 @@ void DataStorage::ParseFile(
         element.Deserialize(entity);
         container.emplace(element.GetId(), element);
     }
-
-    ///
-    // std::cout << "Container size = " << container.size() << std::endl;
-    ///
 }
 
 void DataStorage::MapEntities()
@@ -153,12 +145,14 @@ std::unique_ptr<std::string> DataStorage::GetVisistsByUserId(
         const std::string& country,
         const uint32_t to_distance)
 {
-    ENSURE_TRUE_OTHERWISE_RETURN(users_.find(user_id) != users_.end(), nullptr);
+    ENSURE_TRUE_OTHERWISE_RETURN(users_.find(user_id) != users_.end(),nullptr);
 
     const auto visits_iterator =
             users_to_visits_.find(user_id);
     
-    ENSURE_TRUE_OTHERWISE_RETURN(visits_iterator != users_to_visits_.end(), nullptr);
+    ENSURE_TRUE_OTHERWISE_RETURN(
+            visits_iterator != users_to_visits_.end(),
+            std::make_unique<std::string>(R"({"visits":[]})"));
 
     auto visits = visits_iterator->second;
 
