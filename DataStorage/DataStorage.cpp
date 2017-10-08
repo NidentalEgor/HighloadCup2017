@@ -13,7 +13,7 @@ void DataStorage::LoadData(const std::string& folder_path)
 {
     DIR* directory;
     struct dirent* entity;
-    if ((directory = opendir (folder_path.c_str())) != nullptr)
+    if ((directory = opendir(folder_path.c_str())) != nullptr)
     {
         while ((entity = readdir (directory)) != nullptr)
         {

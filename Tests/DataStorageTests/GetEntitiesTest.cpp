@@ -5,26 +5,12 @@
 
 #include "DataStorage.h"
 
-class DataStorageGetEntitiesTest : public testing::Test
+class DataStorageGetEntitiesTest
+    : public TimeMeasurableTest
+    , public testing::Test
 {
 public:
-    DataStorageGetEntitiesTest()
-    {
-        start_time_ = std::chrono::high_resolution_clock::now();
-    }
-
-    ~DataStorageGetEntitiesTest()
-    {
-        end_time_ = std::chrono::high_resolution_clock::now();
-        const auto elapsed_time =
-                std::chrono::duration_cast<std::chrono::nanoseconds>(end_time_ - start_time_);
-        std::cout << testing::UnitTest::GetInstance()->current_test_info()->name() <<
-                ": elapsed time = " << elapsed_time.count() <<
-                " nanoseconds" << std::endl << std::endl;
-    }
-
-protected:
-    virtual void SetUp()
+    static void SetUpTestCase()
     {
         data_storage_.LoadData("/home/egor/Repositories/HighloadCup2017/Tests/DataStorageTests/TestData/ReadData/");
     }
@@ -81,7 +67,7 @@ TEST_F(DataStorageGetEntitiesTest, GetVisitByUserIdNoUser)
     ASSERT_EQ(visit, nullptr);
 }
 
-TEST_F(DataStorageGetEntitiesTest, GetVisitByUserIdWithFromDate)
+TEST_F(DataStorageGetEntitiesTest, GetVisitByUserIdWithFromDateNoVisits)
 {
     const auto visit = data_storage_.GetVisistsByUserId(27, 1049447315);
 
