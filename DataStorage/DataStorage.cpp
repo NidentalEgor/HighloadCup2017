@@ -167,12 +167,13 @@ std::unique_ptr<std::string> DataStorage::GetVisistsByUserId(
     if (to_date != -1)
     {
         const auto last_suitable_visit =
-                visits.upper_bound(to_date);
+                visits.lower_bound(to_date);
 
         visits.erase(last_suitable_visit, visits.end());
     }
 
     // Distance == 0?
+    std::cout << "Before if visits.size() = " << visits.size() << std::endl;
     if (country != "" || to_distance != 0)
     {
         for (auto visit_description = visits.begin()
@@ -187,6 +188,8 @@ std::unique_ptr<std::string> DataStorage::GetVisistsByUserId(
             const auto location = locations_.find(visit->second.location_id_);
             ENSURE_TRUE_OTHERWISE_CONTINUE(location != locations_.end())
 
+
+            std::cout << "location->second.country_ = " << location->second.country_ << std::endl;
             if (country != "" && location->second.country_ != country)
             {
                 visit_description =
@@ -201,6 +204,7 @@ std::unique_ptr<std::string> DataStorage::GetVisistsByUserId(
             }
         }
     }
+    std::cout << "After if visits.size() = " << visits.size() << std::endl;
 
     std::string result(R"({"visits":[)");
     for (const auto visit_description : visits)
