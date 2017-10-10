@@ -143,7 +143,7 @@ std::unique_ptr<std::string> DataStorage::GetVisistsByUserId(
         const Timestamp from_date,
         const Timestamp to_date,
         const std::string& country,
-        const uint32_t to_distance)
+        const uint32_t to_distance) const
 {
     ENSURE_TRUE_OTHERWISE_RETURN(users_.find(user_id) != users_.end(),nullptr);
 
@@ -245,7 +245,7 @@ std::unique_ptr<std::string> DataStorage::GetVisistsByUserId(
     std::string result(R"({"visits":[)");
     for (const auto visit_description : visits)
     {
-        result += *visits_[visit_description.second].Serialize();
+        result += *visits_.find(visit_description.second)->second.Serialize();
         result += ',';
     }
 
@@ -258,9 +258,39 @@ std::unique_ptr<std::string> DataStorage::GetVisistsByUserId(
     return std::make_unique<std::string>(result);
 }
 
+std::pair<bool, double> DataStorage::GetAverageMark(
+        const Timestamp from_date,
+        const Timestamp to_date,
+        const Timestamp from_age,
+        const Timestamp to_age,
+        const Gender gender) const
+{
+    return std::make_pair(true, 1.0);
+}
+
+DataStorage::UpdateEntityStatus DataStorage::UpdateUser(
+        const User& user)
+{
+    const auto user_iterator = users_.find(user.id_);
+
+    if (user_iterator == users_.end())
+    {
+        return UpdateEntityStatus::EntityNotFound;
+    }
+
+    users_[user.id_] = user;
+
+    //
+    // May I change anything else?
+    //
+
+    return UpdateEntityStatus::EntityUpdateSuccessfully;
+
+}
+
 ///
 #include <fstream>
-void DataStorage::DumpData()
+void DataStorage::DumpData() const
 {
     std::ofstream out_loc("visits_to_locations.txt");
     for (const auto& visit_to_location : visites_to_locations_)

@@ -20,6 +20,12 @@ public:
     using MappedIndexes = std::unordered_map<uint32_t, uint32_t>;
     using MappedMultiIndexes = std::unordered_map<uint32_t, std::multimap<Timestamp, uint32_t>>;
 
+    enum class UpdateEntityStatus
+    {
+        EntityNotFound = 0,
+        EntityUpdateSuccessfully
+    };
+
 public:
     void LoadData(
             const std::string& folder_path);
@@ -53,9 +59,20 @@ public:
             const Timestamp from_date = -1,
             const Timestamp to_date = -1,
             const std::string& country = "",
-            const uint32_t to_distance = 0); // think
+            const uint32_t to_distance = 0) const; // think
+
+    std::pair<bool, double> GetAverageMark(
+            const Timestamp from_date = -1,
+            const Timestamp to_date = -1,
+            const Timestamp from_age = -1,
+            const Timestamp to_age = -1,
+            const Gender gender = Gender::Female) const;
+
+    UpdateEntityStatus UpdateUser(
+            const User& user);
+
     ///
-    void DumpData();
+    void DumpData() const;
     ///
 
 private:
