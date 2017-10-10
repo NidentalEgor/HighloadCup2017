@@ -124,3 +124,27 @@ TEST_F(GetVisitsByUserIdTests, TwoOfFourVisitsDueToCountryTest)
             R"({"visits": [{"user": 27, "location": 22, "visited_at": 1049447316, "id": 1, "mark": 3},)"
             R"({"user": 27, "location": 23, "visited_at": 1049447317, "id": 2, "mark": 4}]})");
 }
+
+TEST_F(GetVisitsByUserIdTests, NoVisitsDueToToDistanceTest)
+{
+    LoadData("NoVisitsDueToToDistanceTest/");
+
+    const auto visits = data_storage_.GetVisistsByUserId(27, 1049447100, 1049447319, "Russia", 100);
+
+    ASSERT_NE(visits, nullptr);
+    ASSERT_EQ(*visits, R"({"visits":[]})");
+}
+
+TEST_F(GetVisitsByUserIdTests, TwoOfFourVisitsDueToToDistanceTest)
+{
+    LoadData("TwoOfFourVisitsDueToToDistanceTest/");
+
+    const auto visits = data_storage_.GetVisistsByUserId(27, 1049447100, 1049447319, "Russia", 169);
+
+    ASSERT_NE(visits, nullptr);
+    
+    AssertEqualJsonDocuments(
+            *visits,
+            R"({"visits": [{"user": 27, "location": 22, "visited_at": 1049447316, "id": 1, "mark": 3},)"
+            R"({"user": 27, "location": 23, "visited_at": 1049447317, "id": 2, "mark": 4}]})");
+}
