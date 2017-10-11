@@ -281,5 +281,11 @@ void DataStorage::DumpData() const
     {
         out_loc_ser << *location.second.Serialize() << std::endl;
     }
+
+    std::ofstream out_usr_ser("users.txt");
+    for (const auto& user : users_)
+    {
+        out_usr_ser << *user.second.Serialize() << std::endl;
+    }
 }
 ///

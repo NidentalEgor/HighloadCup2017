@@ -1,6 +1,7 @@
 #include "DataStorageTests/LoadDataTests/LoadDataTests.h"
 #include "DataStorageTests/GetEntityByIdTests/GetEntityByIdTests.h"
 #include "DataStorageTests/GetVisitsByUserIdTests/GetVisitsByUserIdTests.h"
+#include "DataStorageTests/UpdateEntityTests/UpdateEntityTests.h"
 
 int main(int argc, char* argv[])
 {

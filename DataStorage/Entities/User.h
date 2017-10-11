@@ -47,8 +47,6 @@ private:
     std::string last_name_;
     Gender gender_;
     Timestamp birth_date_;
-
-    // std::set<uint32_t, VisitSorterByDate> visits_id_;
 };
 
 #endif // USER_H_INCLUDED

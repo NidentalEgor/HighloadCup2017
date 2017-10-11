@@ -2,17 +2,22 @@
 #include "rapidjson/document.h"
 
 #include "DataStorage.h"
+#include "../../TimeMeasurableTest.h"
+#include "../../TestDataLoadableTest.h"
 
 class GetVisitsByUserIdTests
     : public TimeMeasurableTest
+    , public TestDataLoadableTest
     , public testing::Test
 {
-protected:
-    void LoadData(const std::string& test_data_folder_name)
+public:
+    GetVisitsByUserIdTests()
+        : TestDataLoadableTest(R"(/home/egor/Repositories/HighloadCup2017/)"
+            R"(Tests/DataStorageTests/GetVisitsByUserIdTests/TestData/)")
     {
-        data_storage_.LoadData(test_data_folder_path_ + test_data_folder_name);
     }
 
+protected:
     void AssertEqualJsonDocuments(
             const std::string& actual_json_content,
             const std::string& expected_json_content)
@@ -26,10 +31,6 @@ protected:
         
         ASSERT_EQ(actual, expected);
     }
-
-protected:
-    DataStorage data_storage_;
-    std::string test_data_folder_path_ = R"(/home/egor/Repositories/HighloadCup2017/Tests/DataStorageTests/GetVisitsByUserIdTests/TestData/)";
 };
 
 TEST_F(GetVisitsByUserIdTests, NoUserTest)
