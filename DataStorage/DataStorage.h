@@ -6,6 +6,7 @@
 #include <unordered_map>
 #include <map>
 #include <memory>
+#include <limits>
 
 #include "Entities/Location.h"
 #include "Entities/User.h"
@@ -59,7 +60,7 @@ public:
             const Timestamp from_date = -1,
             const Timestamp to_date = -1,
             const std::string& country = "",
-            const uint32_t to_distance = 0) const; // think
+            const uint32_t to_distance = std::numeric_limits<uint32_t>::max()) const; // think
 
     std::pair<bool, double> GetAverageMark(
             const Timestamp from_date = -1,

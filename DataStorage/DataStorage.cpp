@@ -172,7 +172,7 @@ std::unique_ptr<std::string> DataStorage::GetVisistsByUserId(
         visits.erase(last_suitable_visit, visits.end());
     }
 
-    if (country != "")
+    if (country != "" || to_distance != std::numeric_limits<uint32_t>::max())
     {
         auto visit_description = visits.begin();
         while (visit_description != visits.end())
@@ -200,37 +200,7 @@ std::unique_ptr<std::string> DataStorage::GetVisistsByUserId(
                 visit_description =
                         visits.erase(visit_description);
             }
-            else
-            {
-                ++visit_description;
-            }
-        }
-    }
-
-    if (to_distance != 0)
-    {
-        auto visit_description = visits.begin();
-        while (visit_description != visits.end())
-        {
-            // May be remove?
-            const auto visit = visits_.find(visit_description->second);
-            //ENSURE_TRUE_OTHERWISE_CONTINUE(visit != visits_.end())
-            // if (visit == visits_.end())
-            // {
-            //     ++visit_description;
-            //     continue;
-            // }
-            //
-
-            const auto location = locations_.find(visit->second.location_id_);
-            // ENSURE_TRUE_OTHERWISE_CONTINUE(location != locations_.end())
-            if (location == locations_.end())
-            {
-                ++visit_description;
-                continue;
-            }
-
-            if (location->second.distance_ >= to_distance)
+            else if (location->second.distance_ >= to_distance)
             {
                 visit_description =
                         visits.erase(visit_description);
