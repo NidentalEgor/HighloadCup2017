@@ -1,13 +1,14 @@
 #include "gtest/gtest.h"
-#include "rapidjson/document.h"
 
 #include "DataStorage.h"
 #include "../../TimeMeasurableTest.h"
 #include "../../TestDataLoadableTest.h"
+#include "../../JsonComparableTest.h"
 
 class GetVisitsByUserIdTests
     : public TimeMeasurableTest
     , public TestDataLoadableTest
+    , public JsonComparableTest
     , public testing::Test
 {
 public:
@@ -15,21 +16,6 @@ public:
         : TestDataLoadableTest(R"(/home/egor/Repositories/HighloadCup2017/)"
             R"(Tests/DataStorageTests/GetVisitsByUserIdTests/TestData/)")
     {
-    }
-
-protected:
-    void AssertEqualJsonDocuments(
-            const std::string& actual_json_content,
-            const std::string& expected_json_content)
-    {
-        // Sorted by date.
-        rapidjson::Document actual;
-        actual.Parse(actual_json_content.c_str());
-    
-        rapidjson::Document expected;
-        expected.Parse(expected_json_content.c_str());
-        
-        ASSERT_EQ(actual, expected);
     }
 };
 

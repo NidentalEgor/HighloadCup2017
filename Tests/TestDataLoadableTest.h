@@ -2,6 +2,10 @@
 #define TEST_DATA_LOADABLE_TEST_H_INLUDED
 #pragma once
 
+#include <string>
+
+#include "DataStorage.h"
+
 class TestDataLoadableTest
 {
 public:

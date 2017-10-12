@@ -24,7 +24,7 @@ public:
     enum class UpdateEntityStatus
     {
         EntityNotFound = 0,
-        EntityUpdateSuccessfully
+        EntitySuccessfullyUpdated
     };
 
 public:
@@ -72,6 +72,12 @@ public:
     UpdateEntityStatus UpdateUser(
             const User& user);
 
+    UpdateEntityStatus UpdateVisit(
+            const Visit& visit);
+
+    UpdateEntityStatus UpdateLocation(
+            const Location& location);
+
     ///
     void DumpData() const;
     ///
@@ -83,6 +89,11 @@ private:
     std::unique_ptr<std::string> GetEntityById(
             const uint32_t entity_id,
             const Container<T>& entities);
+
+    template <typename T>
+    DataStorage::UpdateEntityStatus UpdateEntity(
+            const T& entity,
+            Container<T>& entities);
 
     template <typename T>
     void ParseFile(

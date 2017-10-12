@@ -241,21 +241,38 @@ std::pair<bool, double> DataStorage::GetAverageMark(
 DataStorage::UpdateEntityStatus DataStorage::UpdateUser(
         const User& user)
 {
-    const auto user_iterator = users_.find(user.id_);
+    // May I reculc something?
+    return UpdateEntity<User>(user, users_);
+}
 
-    if (user_iterator == users_.end())
-    {
-        return UpdateEntityStatus::EntityNotFound;
-    }
+DataStorage::UpdateEntityStatus DataStorage::UpdateVisit(
+        const Visit& visit)
+{
+    // May I reculc something?
+    return UpdateEntity<Visit>(visit, visits_);
+}
 
-    users_[user.id_] = user;
+DataStorage::UpdateEntityStatus DataStorage::UpdateLocation(
+        const Location& location)
+{
+    // May I reculc something?
+    return UpdateEntity<Location>(location, locations_);
+}
 
-    //
-    // May I change anything else?
-    //
+template <typename T>
+DataStorage::UpdateEntityStatus DataStorage::UpdateEntity(
+        const T& entity,
+        Container<T>& entities)
+{
+    const auto entity_to_update = entities.find(entity.id_);
 
-    return UpdateEntityStatus::EntityUpdateSuccessfully;
+    ENSURE_TRUE_OTHERWISE_RETURN(
+            entity_to_update != entities.end(),
+            UpdateEntityStatus::EntityNotFound)
 
+    entities[entity.id_] = entity;
+
+    return UpdateEntityStatus::EntitySuccessfullyUpdated;
 }
 
 ///

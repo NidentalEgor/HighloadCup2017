@@ -13,7 +13,7 @@ public:
         start_time_ = std::chrono::high_resolution_clock::now();
     }
 
-    ~TimeMeasurableTest()
+    virtual ~TimeMeasurableTest()
     {
         end_time_ = std::chrono::high_resolution_clock::now();
         const auto elapsed_time =
