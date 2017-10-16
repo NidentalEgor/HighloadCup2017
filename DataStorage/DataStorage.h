@@ -27,6 +27,24 @@ public:
         EntitySuccessfullyUpdated
     };
 
+    struct GetAverageLocationMarkQuery
+    {
+    public:
+        GetAverageLocationMarkQuery(
+                const uint32_t id)
+            : id(id)
+        {
+        }
+
+    public:
+        uint32_t id = 0;
+        Timestamp from_date = -1;
+        Timestamp to_date = -1;
+        Timestamp from_age = -1;
+        Timestamp to_age = -1;
+        Gender gender = Gender::Any;
+    };
+
 public:
     void LoadData(
             const std::string& folder_path);
@@ -62,12 +80,8 @@ public:
             const std::string& country = "",
             const uint32_t to_distance = std::numeric_limits<uint32_t>::max()) const; // think
 
-    std::pair<bool, double> GetAverageMark(
-            const Timestamp from_date = -1,
-            const Timestamp to_date = -1,
-            const Timestamp from_age = -1,
-            const Timestamp to_age = -1,
-            const Gender gender = Gender::Female) const;
+    std::unique_ptr<std::string> GetAverageLocationMark(
+            const GetAverageLocationMarkQuery query_description) const;
 
     UpdateEntityStatus UpdateUser(
             const User& user);

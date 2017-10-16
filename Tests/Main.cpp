@@ -2,6 +2,7 @@
 #include "DataStorageTests/GetEntityByIdTests/GetEntityByIdTests.h"
 #include "DataStorageTests/GetVisitsByUserIdTests/GetVisitsByUserIdTests.h"
 #include "DataStorageTests/UpdateEntityTests/UpdateEntityTests.h"
+#include "DataStorageTests/GetAverageLocationMarkTests/GetAverageLocationMarkTests.h"
 
 int main(int argc, char* argv[])
 {

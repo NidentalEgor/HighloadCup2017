@@ -228,14 +228,14 @@ std::unique_ptr<std::string> DataStorage::GetVisistsByUserId(
     return std::make_unique<std::string>(result);
 }
 
-std::pair<bool, double> DataStorage::GetAverageMark(
-        const Timestamp from_date,
-        const Timestamp to_date,
-        const Timestamp from_age,
-        const Timestamp to_age,
-        const Gender gender) const
+std::unique_ptr<std::string> DataStorage::GetAverageLocationMark(
+        const GetAverageLocationMarkQuery query_description) const
 {
-    return std::make_pair(true, 1.0);
+    const auto location = locations_.find(query_description.id);
+    ENSURE_TRUE_OTHERWISE_RETURN(location != locations_.end(), nullptr);
+
+
+    return nullptr;
 }
 
 DataStorage::UpdateEntityStatus DataStorage::UpdateUser(
