@@ -1,5 +1,7 @@
 #include <dirent.h>
 #include <iostream>
+#include <sstream>
+#include <iomanip>
 
 #include "Macroses.h"
 #include "DataStorage.h"
@@ -93,6 +95,7 @@ void DataStorage::MapEntities()
             user != users_.end())
         {
             visites_to_locations_.emplace(visit.first, location->first);
+            locations_to_visits_[location->first].emplace(visit.second.visited_at_, visit.first);
             visites_to_users_.emplace(visit.first, user->first);
             users_to_visits_[user->first].emplace(visit.second.visited_at_, visit.first);
         }
@@ -158,18 +161,18 @@ std::unique_ptr<std::string> DataStorage::GetVisistsByUserId(
 
     if (from_date != -1)
     {
-        const auto first_suitable_visit =
-                visits.upper_bound(from_date);
-
-        visits.erase(visits.begin(), first_suitable_visit);
+        EraseLessOrEqualElements(from_date, visits);
+        ENSURE_TRUE_OTHERWISE_RETURN(
+                !visits.empty(),
+                std::make_unique<std::string>(R"({"visits":[]})"));
     }
 
     if (to_date != -1)
     {
-        const auto last_suitable_visit =
-                visits.lower_bound(to_date);
-
-        visits.erase(last_suitable_visit, visits.end());
+        EraseGreaterOrEqualElements(to_date, visits);
+        ENSURE_TRUE_OTHERWISE_RETURN(
+                !visits.empty(),
+                std::make_unique<std::string>(R"({"visits":[]})"));
     }
 
     if (country != "" || to_distance != std::numeric_limits<uint32_t>::max())
@@ -228,14 +231,71 @@ std::unique_ptr<std::string> DataStorage::GetVisistsByUserId(
     return std::make_unique<std::string>(result);
 }
 
+template <typename T>
+void DataStorage::EraseGreaterOrEqualElements(
+    const Timestamp bound,
+    T& container) const
+{
+    container.erase(
+            container.lower_bound(bound),
+            container.end());
+}
+
+template <typename T>
+void DataStorage::EraseLessOrEqualElements(
+        const Timestamp bound,
+        T& container) const
+{
+    container.erase(
+            container.begin(),
+            container.upper_bound(bound));
+}
+
 std::unique_ptr<std::string> DataStorage::GetAverageLocationMark(
         const GetAverageLocationMarkQuery query_description) const
 {
-    const auto location = locations_.find(query_description.id);
-    ENSURE_TRUE_OTHERWISE_RETURN(location != locations_.end(), nullptr);
+    ENSURE_TRUE_OTHERWISE_RETURN(
+            locations_.find(query_description.id) != locations_.end(),
+            nullptr);
 
+    const auto location_id_to_visits =
+            locations_to_visits_.find(query_description.id);
+    ENSURE_TRUE_OTHERWISE_RETURN(
+            location_id_to_visits != locations_to_visits_.end(),
+            std::make_unique<std::string>(R"({"avg":0})"));
 
-    return nullptr;
+    auto visits = location_id_to_visits->second;
+
+    if (query_description.from_date != std::numeric_limits<Timestamp>::min())
+    {
+        EraseLessOrEqualElements(query_description.from_date, visits);
+        ENSURE_TRUE_OTHERWISE_RETURN(
+                !visits.empty(),
+                std::make_unique<std::string>(R"({"avg":0})"));
+    }
+
+    if (query_description.to_date != std::numeric_limits<Timestamp>::max())
+    {
+        EraseGreaterOrEqualElements(query_description.to_date, visits);
+        ENSURE_TRUE_OTHERWISE_RETURN(
+                !visits.empty(),
+                std::make_unique<std::string>(R"({"avg":0})"));   
+    }
+
+    double sum = 0.0;
+    for (auto visit : visits)
+    {
+        sum += visits_.find(visit.second)->second.mark_;
+    }
+
+    std::stringstream num;
+    num << std::fixed << std::setprecision(5) <<
+            sum / visits.size();
+    std::string result(R"({"avg":)");
+    result += num.str();
+    result += R"(})";
+
+    return std::make_unique<std::string>(result);
 }
 
 DataStorage::UpdateEntityStatus DataStorage::UpdateUser(

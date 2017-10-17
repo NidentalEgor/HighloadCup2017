@@ -38,10 +38,10 @@ public:
 
     public:
         uint32_t id = 0;
-        Timestamp from_date = -1;
-        Timestamp to_date = -1;
-        Timestamp from_age = -1;
-        Timestamp to_age = -1;
+        Timestamp from_date = std::numeric_limits<Timestamp>::min();
+        Timestamp to_date = std::numeric_limits<Timestamp>::max();
+        Timestamp from_age = std::numeric_limits<Timestamp>::min();
+        Timestamp to_age = std::numeric_limits<Timestamp>::max();
         Gender gender = Gender::Any;
     };
 
@@ -115,6 +115,16 @@ private:
             const std::string& entities_name,            
             Container<T>& container);
 
+    template <typename T>
+    void EraseLessOrEqualElements(
+            const Timestamp bound,
+            T& container) const;
+
+    template <typename T>
+    void EraseGreaterOrEqualElements(
+            const Timestamp bound,
+            T& container) const;
+
 private:
     Container<Location> locations_;
     Container<User> users_;
@@ -122,6 +132,7 @@ private:
     MappedIndexes visites_to_locations_;
     MappedIndexes visites_to_users_;
     MappedMultiIndexes users_to_visits_;
+    MappedMultiIndexes locations_to_visits_;
 };
 
 #endif // DATA_STORAGE_H_INCLUDED
