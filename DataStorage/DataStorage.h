@@ -99,6 +99,9 @@ public:
 private:
     void MapEntities();
 
+    Timestamp GetBoundaryBirthDate(
+            const short age) const;
+
     template <typename T>
     std::unique_ptr<std::string> GetEntityById(
             const uint32_t entity_id,
@@ -129,10 +132,11 @@ private:
     Container<Location> locations_;
     Container<User> users_;
     Container<Visit> visits_;
-    MappedIndexes visites_to_locations_;
-    MappedIndexes visites_to_users_;
+    MappedIndexes visits_to_locations_;
+    MappedIndexes visits_to_users_;
     MappedMultiIndexes users_to_visits_;
     MappedMultiIndexes locations_to_visits_;
+    MappedMultiIndexes locations_to_users_;
 };
 
 #endif // DATA_STORAGE_H_INCLUDED

@@ -118,3 +118,32 @@ TEST_F(DataStorageGetAverageLocationMarkTest, ThreeOfFourMarksForLocationDueToTo
     ASSERT_NE(average_mark, nullptr);
     ASSERT_EQ(*average_mark, R"({"avg":4.33333})");
 }
+
+TEST_F(DataStorageGetAverageLocationMarkTest, NoMarksForLocationDueToFromAge)
+{
+    LoadData("NoMarksForLocationDueToFromAge/");
+    
+    auto query = DataStorage::GetAverageLocationMarkQuery(23);
+    query.from_age = 30;
+
+    const auto average_mark =
+            data_storage_.GetAverageLocationMark(query);
+
+    ASSERT_NE(average_mark, nullptr);
+    ASSERT_EQ(*average_mark, R"({"avg":0})");
+}
+
+TEST_F(DataStorageGetAverageLocationMarkTest, ThreeOfFourMarksForLocationDueToFromAgeTest)
+{
+    LoadData("ThreeOfFourMarksForLocationDueToFromAgeTest/");
+    
+    auto query = DataStorage::GetAverageLocationMarkQuery(23);
+    query.from_age = 30;
+
+    const auto average_mark =
+            data_storage_.GetAverageLocationMark(query);
+
+    ASSERT_NE(average_mark, nullptr);
+    std::cout << "*average_mark" << *average_mark << std::endl;
+    ASSERT_EQ(*average_mark, R"({"avg":3.66667})");
+}

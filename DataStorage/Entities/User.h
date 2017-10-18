@@ -42,7 +42,7 @@ public:
 
     std::unique_ptr<std::string> Serialize() const override final;
     
-private:
+// private:
     std::string email_;
     std::string first_name_;
     std::string last_name_;

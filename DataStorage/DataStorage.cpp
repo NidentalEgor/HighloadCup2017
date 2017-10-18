@@ -94,9 +94,10 @@ void DataStorage::MapEntities()
         if (location != locations_.end() &&
             user != users_.end())
         {
-            visites_to_locations_.emplace(visit.first, location->first);
+            visits_to_locations_.emplace(visit.first, location->first);
             locations_to_visits_[location->first].emplace(visit.second.visited_at_, visit.first);
-            visites_to_users_.emplace(visit.first, user->first);
+            locations_to_users_[location->first].emplace(user->second.birth_date_, user->first);
+            visits_to_users_.emplace(visit.first, user->first);
             users_to_visits_[user->first].emplace(visit.second.visited_at_, visit.first);
         }
         else
@@ -279,13 +280,70 @@ std::unique_ptr<std::string> DataStorage::GetAverageLocationMark(
         EraseGreaterOrEqualElements(query_description.to_date, visits);
         ENSURE_TRUE_OTHERWISE_RETURN(
                 !visits.empty(),
-                std::make_unique<std::string>(R"({"avg":0})"));   
+                std::make_unique<std::string>(R"({"avg":0})"));  
+    }
+
+    auto location_to_users =
+            locations_to_users_.find(query_description.id);
+    auto users =
+            location_to_users->second;
+
+    std::cout << "visits.size() = " << visits.size() << std::endl;
+    if (query_description.from_age != std::numeric_limits<Timestamp>::min())
+    {
+        auto boundary_date =
+                GetBoundaryBirthDate(query_description.from_age);
+        std::cout << "boundary_date = " << boundary_date << std::endl;
+        auto current_visit = visits.begin();
+        while (current_visit != visits.end())
+        {
+            // std::cout << "current_visit->second = " << current_visit->second << std::endl;
+            auto user_id = visits_to_users_.find(current_visit->second);
+            if (user_id == visits_to_users_.end())
+            {
+                std::cout << "user_id == visits_to_users_.end()" << std::endl;
+            }
+            auto user = users_.find(user_id->second);
+            if (user == users_.end())
+            {
+                std::cout << "user == users_.end()" << std::endl;
+            }
+
+            if (user->second.birth_date_ <= boundary_date)
+            {
+                current_visit = visits.erase(current_visit);
+            }
+            else
+            {
+                ++current_visit;
+            }
+        }
+        // EraseGreaterOrEqualElements(query_description.from_age, users);
+        // auto boundary_date =
+        //         GetBoundaryBirthDate(query_description.from_age);
+        // auto current_user = users.begin();
+        // while (current_user != users.end())
+        // {
+        //     if (user.birth_date_ <= boundary_date)
+        //     {
+        //         current_user = users.erase
+        //     }
+        // }
+
+        ENSURE_TRUE_OTHERWISE_RETURN(
+                !visits.empty(),
+                std::make_unique<std::string>(R"({"avg":0})"));
     }
 
     double sum = 0.0;
+    size_t visits_amount = 0;
     for (auto visit : visits)
     {
+        const auto& current_visit = visits_.find(visit.second)->second;
+        // const auto& user
+        // if (current_visit.user)
         sum += visits_.find(visit.second)->second.mark_;
+        ++visits_amount;
     }
 
     std::stringstream num;
@@ -298,24 +356,31 @@ std::unique_ptr<std::string> DataStorage::GetAverageLocationMark(
     return std::make_unique<std::string>(result);
 }
 
+Timestamp DataStorage::GetBoundaryBirthDate(
+        const short age) const
+{
+    // Temp!!!
+    return static_cast<Timestamp>(age);
+}
+
 DataStorage::UpdateEntityStatus DataStorage::UpdateUser(
         const User& user)
 {
-    // May I reculc something?
+    // May I recalc something?
     return UpdateEntity<User>(user, users_);
 }
 
 DataStorage::UpdateEntityStatus DataStorage::UpdateVisit(
         const Visit& visit)
 {
-    // May I reculc something?
+    // May I recalc something?
     return UpdateEntity<Visit>(visit, visits_);
 }
 
 DataStorage::UpdateEntityStatus DataStorage::UpdateLocation(
         const Location& location)
 {
-    // May I reculc something?
+    // May I recalc something?
     return UpdateEntity<Location>(location, locations_);
 }
 
@@ -340,14 +405,14 @@ DataStorage::UpdateEntityStatus DataStorage::UpdateEntity(
 void DataStorage::DumpData() const
 {
     std::ofstream out_loc("visits_to_locations.txt");
-    for (const auto& visit_to_location : visites_to_locations_)
+    for (const auto& visit_to_location : visits_to_locations_)
     {
         out_loc << "visit_id = " << visit_to_location.first <<
                 " location_id = " << visit_to_location.second << std::endl;
     }
 
     std::ofstream out_usr("visits_to_user.txt");
-    for (const auto& visit_to_location : visites_to_locations_)
+    for (const auto& visit_to_location : visits_to_locations_)
     {
         out_usr << "visit_id = " << visit_to_location.first <<
                 " user_id = " << visit_to_location.second << std::endl;
