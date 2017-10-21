@@ -98,7 +98,9 @@ public:
 
 private:
     void MapEntities();
-
+///
+public:
+///
     Timestamp GetBoundaryBirthDate(
             const short age) const;
 
@@ -128,12 +130,22 @@ private:
             const Timestamp bound,
             T& container) const;
 
+    template <typename Comparator>
+    void EraseByAge(
+            const Timestamp from_age,
+            Comparator comparator,
+            std::multimap<Timestamp, uint32_t>& visits) const;
+
+    void EraseByGender(
+            const Gender gender,
+            std::multimap<Timestamp, uint32_t>& visits) const;
+
 private:
     Container<Location> locations_;
     Container<User> users_;
     Container<Visit> visits_;
     MappedIndexes visits_to_locations_;
-    MappedIndexes visits_to_users_;
+    MappedIndexes visits_to_user_;
     MappedMultiIndexes users_to_visits_;
     MappedMultiIndexes locations_to_visits_;
     MappedMultiIndexes locations_to_users_;

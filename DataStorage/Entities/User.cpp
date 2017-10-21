@@ -38,7 +38,7 @@ User::User()
 //     , timestamp_(user_element["timestamp"].GetInt())
 // {
 // }
-
+#include <iostream>
 void User::Deserialize(
         const rapidjson::Value& user_element)
 {
@@ -46,7 +46,10 @@ void User::Deserialize(
     email_ = user_element["email"].GetString();
     first_name_ = user_element["first_name"].GetString();
     last_name_ = user_element["last_name"].GetString();
-    gender_ = user_element["gender"].GetString() == "m" ? Gender::Male : Gender::Female;
+    gender_ =
+        strcmp(user_element["gender"].GetString(), "m") == 0
+        ? Gender::Male
+        : Gender::Female;
     birth_date_ = user_element["birth_date"].GetInt();
 }
 

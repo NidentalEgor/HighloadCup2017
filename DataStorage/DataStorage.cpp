@@ -97,7 +97,7 @@ void DataStorage::MapEntities()
             visits_to_locations_.emplace(visit.first, location->first);
             locations_to_visits_[location->first].emplace(visit.second.visited_at_, visit.first);
             locations_to_users_[location->first].emplace(user->second.birth_date_, user->first);
-            visits_to_users_.emplace(visit.first, user->first);
+            visits_to_user_.emplace(visit.first, user->first);
             users_to_visits_[user->first].emplace(visit.second.visited_at_, visit.first);
         }
         else
@@ -252,6 +252,68 @@ void DataStorage::EraseLessOrEqualElements(
             container.upper_bound(bound));
 }
 
+template <typename Comparator>
+void DataStorage::EraseByAge(
+        const Timestamp from_age,
+        Comparator comparator,
+        std::multimap<Timestamp, uint32_t>& visits) const
+{   
+    const auto from_age_date =
+            GetBoundaryBirthDate(from_age);
+
+    auto current_visit = visits.begin();
+    while (current_visit != visits.end())
+    {
+        auto visit_to_user =
+                visits_to_user_.find(current_visit->second);
+        
+        if (visit_to_user == visits_to_user_.end())
+        {
+            current_visit = visits.erase(current_visit);
+            continue;
+        }
+
+        auto current_user =
+                users_.find(visit_to_user->second);
+
+        if (current_user == users_.end() ||
+            comparator(current_user->second.birth_date_, from_age_date))
+        {
+            current_visit = visits.erase(current_visit);
+            continue;
+        }
+
+        ++current_visit;
+    }
+}
+
+void DataStorage::EraseByGender(
+        const Gender gender,
+        std::multimap<Timestamp, uint32_t>& visits) const
+{
+    auto current_visit = visits.begin();
+    while (current_visit != visits.end())
+    {
+        auto visit_to_user =
+                visits_to_user_.find(current_visit->second);
+        if (visit_to_user == visits_to_user_.end())
+        {
+            current_visit = visits.erase(current_visit);
+            continue;
+        }
+
+        auto user = users_.find(visit_to_user->second);
+        if (user == users_.end() ||
+            gender != user->second.gender_)
+        {
+            current_visit = visits.erase(current_visit);
+            continue;
+        }
+
+        ++current_visit;
+    }
+}
+
 std::unique_ptr<std::string> DataStorage::GetAverageLocationMark(
         const GetAverageLocationMarkQuery query_description) const
 {
@@ -283,52 +345,38 @@ std::unique_ptr<std::string> DataStorage::GetAverageLocationMark(
                 std::make_unique<std::string>(R"({"avg":0})"));  
     }
 
-    auto location_to_users =
+    auto location_to_users =    
             locations_to_users_.find(query_description.id);
     auto users =
             location_to_users->second;
 
-    std::cout << "visits.size() = " << visits.size() << std::endl;
     if (query_description.from_age != std::numeric_limits<Timestamp>::min())
     {
-        auto boundary_date =
-                GetBoundaryBirthDate(query_description.from_age);
-        std::cout << "boundary_date = " << boundary_date << std::endl;
-        auto current_visit = visits.begin();
-        while (current_visit != visits.end())
-        {
-            // std::cout << "current_visit->second = " << current_visit->second << std::endl;
-            auto user_id = visits_to_users_.find(current_visit->second);
-            if (user_id == visits_to_users_.end())
-            {
-                std::cout << "user_id == visits_to_users_.end()" << std::endl;
-            }
-            auto user = users_.find(user_id->second);
-            if (user == users_.end())
-            {
-                std::cout << "user == users_.end()" << std::endl;
-            }
+        EraseByAge(
+                query_description.from_age,
+                std::greater<Timestamp>(),
+                visits);
+        ENSURE_TRUE_OTHERWISE_RETURN(
+                !visits.empty(),
+                std::make_unique<std::string>(R"({"avg":0})"));
+    }
 
-            if (user->second.birth_date_ <= boundary_date)
-            {
-                current_visit = visits.erase(current_visit);
-            }
-            else
-            {
-                ++current_visit;
-            }
-        }
-        // EraseGreaterOrEqualElements(query_description.from_age, users);
-        // auto boundary_date =
-        //         GetBoundaryBirthDate(query_description.from_age);
-        // auto current_user = users.begin();
-        // while (current_user != users.end())
-        // {
-        //     if (user.birth_date_ <= boundary_date)
-        //     {
-        //         current_user = users.erase
-        //     }
-        // }
+    if (query_description.to_age != std::numeric_limits<Timestamp>::max())
+    {
+        EraseByAge(
+                query_description.to_age,
+                std::less<Timestamp>(),
+                visits);
+        ENSURE_TRUE_OTHERWISE_RETURN(
+                !visits.empty(),
+                std::make_unique<std::string>(R"({"avg":0})"));
+    }
+
+    if (query_description.gender != Gender::Any)
+    {
+        EraseByGender(
+                query_description.gender,
+                visits);
 
         ENSURE_TRUE_OTHERWISE_RETURN(
                 !visits.empty(),
@@ -340,8 +388,6 @@ std::unique_ptr<std::string> DataStorage::GetAverageLocationMark(
     for (auto visit : visits)
     {
         const auto& current_visit = visits_.find(visit.second)->second;
-        // const auto& user
-        // if (current_visit.user)
         sum += visits_.find(visit.second)->second.mark_;
         ++visits_amount;
     }
@@ -359,8 +405,13 @@ std::unique_ptr<std::string> DataStorage::GetAverageLocationMark(
 Timestamp DataStorage::GetBoundaryBirthDate(
         const short age) const
 {
-    // Temp!!!
-    return static_cast<Timestamp>(age);
+    static time_t now_epoch_time = time(NULL);
+    static struct tm* now_time = gmtime(&now_epoch_time);
+    auto birth_date = *now_time;
+    birth_date.tm_year -= age;
+    time_t birth_date_epoch = mktime(&birth_date);
+
+    return birth_date_epoch;
 }
 
 DataStorage::UpdateEntityStatus DataStorage::UpdateUser(

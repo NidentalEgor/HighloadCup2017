@@ -4,6 +4,7 @@
 
 #include <string>
 
-using Timestamp = long long;
+// using Timestamp = long long;
+using Timestamp = long int;
 
 #endif // DATA_TYPES_H_INCLUDED
