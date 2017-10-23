@@ -52,3 +52,9 @@ TEST_F(DataStorageLoadDataTest, TwoExemplarOfEachEntityTest)
 
     AssertEntitiesAmount(2);
 }
+
+TEST_F(DataStorageLoadDataTest, BigDataTest)
+{
+    // Add path to big data!
+    LoadData("/");
+}

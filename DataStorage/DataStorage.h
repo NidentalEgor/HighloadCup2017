@@ -45,6 +45,23 @@ public:
         Gender gender = Gender::Any;
     };
 
+    struct GetVisistsByUserIdQuery
+    {
+    public:
+        GetVisistsByUserIdQuery(
+                const uint32_t id)
+            : id(id)
+        {
+        }
+
+    public:
+        uint32_t id;
+        Timestamp from_date = std::numeric_limits<Timestamp>::min();
+        Timestamp to_date = std::numeric_limits<Timestamp>::max();
+        std::string country = "";
+        uint32_t to_distance = std::numeric_limits<uint32_t>::max();
+    };
+
 public:
     void LoadData(
             const std::string& folder_path);
@@ -74,11 +91,7 @@ public:
             const uint32_t visit_id);
 
     std::unique_ptr<std::string> GetVisistsByUserId(
-            const uint32_t user_id,
-            const Timestamp from_date = -1,
-            const Timestamp to_date = -1,
-            const std::string& country = "",
-            const uint32_t to_distance = std::numeric_limits<uint32_t>::max()) const; // think
+            const GetVisistsByUserIdQuery& query_description) const;
 
     std::unique_ptr<std::string> GetAverageLocationMark(
             const GetAverageLocationMarkQuery query_description) const;
@@ -98,9 +111,7 @@ public:
 
 private:
     void MapEntities();
-///
-public:
-///
+
     Timestamp GetBoundaryBirthDate(
             const short age) const;
 
@@ -138,6 +149,14 @@ public:
 
     void EraseByGender(
             const Gender gender,
+            std::multimap<Timestamp, uint32_t>& visits) const;
+
+    void EraseByCountry(
+            const std::string& country,
+            std::multimap<Timestamp, uint32_t>& visits) const;
+    
+    void EraseByToDistance(
+            const uint32_t to_distance,
             std::multimap<Timestamp, uint32_t>& visits) const;
 
 private:

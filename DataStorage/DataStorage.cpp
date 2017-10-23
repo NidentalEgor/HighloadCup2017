@@ -142,17 +142,69 @@ std::unique_ptr<std::string> DataStorage::GetEntityById(
         : std::make_unique<std::string>(*entity->second.Serialize());
 }
 
-std::unique_ptr<std::string> DataStorage::GetVisistsByUserId(
-        const uint32_t user_id,
-        const Timestamp from_date,
-        const Timestamp to_date,
+void DataStorage::EraseByCountry(
         const std::string& country,
-        const uint32_t to_distance) const
+        std::multimap<Timestamp, uint32_t>& visits) const
 {
-    ENSURE_TRUE_OTHERWISE_RETURN(users_.find(user_id) != users_.end(),nullptr);
+    auto visit_description = visits.begin();
+    while (visit_description != visits.end())
+    {
+        const auto visit_id_to_location_id =
+                visits_to_locations_.find(visit_description->second);
+        if (visit_id_to_location_id == visits_to_locations_.end())
+        {
+            visit_description = visits.erase(visit_description);
+            continue;
+        }
+
+        const auto location =
+                locations_.find(visit_id_to_location_id->second);
+        if (location->second.country_ != country)
+        {
+            visit_description = visits.erase(visit_description);
+            continue;
+        }
+
+        ++visit_description;
+    }
+}
+
+void DataStorage::EraseByToDistance(
+        const uint32_t to_distance,
+        std::multimap<Timestamp, uint32_t>& visits) const
+{
+    auto visit_description = visits.begin();
+    while (visit_description != visits.end())
+    {
+        const auto visit_id_to_location_id =
+                visits_to_locations_.find(visit_description->second);
+        if (visit_id_to_location_id == visits_to_locations_.end())
+        {
+            visit_description = visits.erase(visit_description);
+            continue;
+        }
+
+        const auto location =
+                locations_.find(visit_id_to_location_id->second);
+        if (location->second.distance_ >= to_distance)
+        {
+            visit_description = visits.erase(visit_description);
+            continue;
+        }
+
+        ++visit_description;
+    }
+}
+
+std::unique_ptr<std::string> DataStorage::GetVisistsByUserId(
+        const GetVisistsByUserIdQuery& query_description) const
+{
+    ENSURE_TRUE_OTHERWISE_RETURN(
+            users_.find(query_description.id) != users_.end(),
+            nullptr);
 
     const auto visits_iterator =
-            users_to_visits_.find(user_id);
+            users_to_visits_.find(query_description.id);
     
     ENSURE_TRUE_OTHERWISE_RETURN(
             visits_iterator != users_to_visits_.end(),
@@ -160,60 +212,40 @@ std::unique_ptr<std::string> DataStorage::GetVisistsByUserId(
 
     auto visits = visits_iterator->second;
 
-    if (from_date != -1)
+    if (query_description.from_date != std::numeric_limits<Timestamp>::min())
     {
-        EraseLessOrEqualElements(from_date, visits);
+        EraseLessOrEqualElements(query_description.from_date, visits);
         ENSURE_TRUE_OTHERWISE_RETURN(
                 !visits.empty(),
                 std::make_unique<std::string>(R"({"visits":[]})"));
     }
 
-    if (to_date != -1)
+    if (query_description.to_date != std::numeric_limits<Timestamp>::max())
     {
-        EraseGreaterOrEqualElements(to_date, visits);
+        EraseGreaterOrEqualElements(query_description.to_date, visits);
         ENSURE_TRUE_OTHERWISE_RETURN(
                 !visits.empty(),
                 std::make_unique<std::string>(R"({"visits":[]})"));
     }
 
-    if (country != "" || to_distance != std::numeric_limits<uint32_t>::max())
+    if (query_description.country != "") // may be diffrent mark?
     {
-        auto visit_description = visits.begin();
-        while (visit_description != visits.end())
-        {
-            // May be remove?
-            const auto visit = visits_.find(visit_description->second);
-            //ENSURE_TRUE_OTHERWISE_CONTINUE(visit != visits_.end())
-            // if (visit == visits_.end())
-            // {
-            //     ++visit_description;
-            //     continue;
-            // }
-            //
+        EraseByCountry(
+                query_description.country,
+                visits);
+        ENSURE_TRUE_OTHERWISE_RETURN(
+                !visits.empty(),
+                std::make_unique<std::string>(R"({"visits":[]})"));
+    }
 
-            const auto location = locations_.find(visit->second.location_id_);
-            // ENSURE_TRUE_OTHERWISE_CONTINUE(location != locations_.end())
-            if (location == locations_.end())
-            {
-                ++visit_description;
-                continue;
-            }
-
-            if (location->second.country_ != country)
-            {
-                visit_description =
-                        visits.erase(visit_description);
-            }
-            else if (location->second.distance_ >= to_distance)
-            {
-                visit_description =
-                        visits.erase(visit_description);
-            }
-            else
-            {
-                ++visit_description;
-            }
-        }
+    if (query_description.to_distance != std::numeric_limits<uint32_t>::max())
+    {
+        EraseByToDistance(
+                query_description.to_distance,
+                visits);
+        ENSURE_TRUE_OTHERWISE_RETURN(
+                !visits.empty(),
+                std::make_unique<std::string>(R"({"visits":[]})"));
     }
 
     std::string result(R"({"visits":[)");

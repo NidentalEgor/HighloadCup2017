@@ -23,7 +23,9 @@ TEST_F(GetVisitsByUserIdTests, NoUserTest)
 {
     LoadData("NoUserTest/");
 
-    const auto visit = data_storage_.GetVisistsByUserId(999);
+    const auto visit =
+            data_storage_.GetVisistsByUserId(
+                DataStorage::GetVisistsByUserIdQuery(999));
 
     ASSERT_EQ(visit, nullptr);
 }
@@ -32,8 +34,10 @@ TEST_F(GetVisitsByUserIdTests, NoVisitsTest)
 {
     LoadData("NoVisitsTest/");
 
-    const auto visit = data_storage_.GetVisistsByUserId(28);
-
+    const auto visit =
+            data_storage_.GetVisistsByUserId(
+                DataStorage::GetVisistsByUserIdQuery(28));
+    
     ASSERT_NE(visit, nullptr);
     ASSERT_EQ(*visit, R"({"visits":[]})");
 }
@@ -42,7 +46,9 @@ TEST_F(GetVisitsByUserIdTests, NoVisitsDueToFromDateTest)
 {
     LoadData("NoVisitsDueToFromDateTest/");
 
-    const auto visit = data_storage_.GetVisistsByUserId(27, 1049447316); // Boundary case.
+    DataStorage::GetVisistsByUserIdQuery query(27);
+    query.from_date = 1049447316;
+    const auto visit = data_storage_.GetVisistsByUserId(query); // Boundary case.
 
     ASSERT_NE(visit, nullptr);
     ASSERT_EQ(*visit, R"({"visits":[]})");
@@ -52,7 +58,9 @@ TEST_F(GetVisitsByUserIdTests, ThreeOfFourVisitsDueToFromDateTest)
 {
     LoadData("ThreeOfFourVisitsDueToFromDateTest/");
 
-    const auto visits = data_storage_.GetVisistsByUserId(27, 1049447316); // Boundary case.
+    DataStorage::GetVisistsByUserIdQuery query(27);
+    query.from_date = 1049447316;
+    const auto visits = data_storage_.GetVisistsByUserId(query); // Boundary case.
 
     ASSERT_NE(visits, nullptr);
     
@@ -67,7 +75,9 @@ TEST_F(GetVisitsByUserIdTests, NoVisitsDueToToDateTest)
 {
     LoadData("NoVisitsDueToToDateTest/");
     
-    const auto visits = data_storage_.GetVisistsByUserId(27, 1049447100, 1049447314); // Boundary case.
+    DataStorage::GetVisistsByUserIdQuery query(27);
+    query.to_date = 1049447314;
+    const auto visits = data_storage_.GetVisistsByUserId(query); // Boundary case.
 
     ASSERT_NE(visits, nullptr);
     ASSERT_EQ(*visits, R"({"visits":[]})");
@@ -77,7 +87,9 @@ TEST_F(GetVisitsByUserIdTests, ThreeOfFourVisitsDueToToDateTest)
 {
     LoadData("ThreeOfFourVisitsDueToToDateTest/");
 
-    const auto visits = data_storage_.GetVisistsByUserId(27, 1049447100, 1049447318); // Boundary case.
+    DataStorage::GetVisistsByUserIdQuery query(27);
+    query.to_date = 1049447318;
+    const auto visits = data_storage_.GetVisistsByUserId(query); // Boundary case.
 
     ASSERT_NE(visits, nullptr);
     
@@ -92,7 +104,9 @@ TEST_F(GetVisitsByUserIdTests, NoVisitsDueToCountryTest)
 {
     LoadData("NoVisitsDueToCountryTest/");
 
-    const auto visits = data_storage_.GetVisistsByUserId(27, 1049447100, 1049447319, "Russia");
+    DataStorage::GetVisistsByUserIdQuery query(27);
+    query.country = "Russia";
+    const auto visits = data_storage_.GetVisistsByUserId(query);
 
     ASSERT_NE(visits, nullptr);
     ASSERT_EQ(*visits, R"({"visits":[]})");
@@ -102,7 +116,9 @@ TEST_F(GetVisitsByUserIdTests, TwoOfFourVisitsDueToCountryTest)
 {
     LoadData("TwoOfFourVisitsDueToCountryTest/");
 
-    const auto visits = data_storage_.GetVisistsByUserId(27, 1049447100, 1049447319, "Russia");
+    DataStorage::GetVisistsByUserIdQuery query(27);
+    query.country = "Russia";
+    const auto visits = data_storage_.GetVisistsByUserId(query);
 
     ASSERT_NE(visits, nullptr);
     
@@ -116,7 +132,9 @@ TEST_F(GetVisitsByUserIdTests, NoVisitsDueToToDistanceTest)
 {
     LoadData("NoVisitsDueToToDistanceTest/");
 
-    const auto visits = data_storage_.GetVisistsByUserId(27, 1049447100, 1049447319, "Russia", 100);
+    DataStorage::GetVisistsByUserIdQuery query(27);
+    query.to_distance = 100;
+    const auto visits = data_storage_.GetVisistsByUserId(query);
 
     ASSERT_NE(visits, nullptr);
     ASSERT_EQ(*visits, R"({"visits":[]})");
@@ -126,10 +144,14 @@ TEST_F(GetVisitsByUserIdTests, TwoOfFourVisitsDueToToDistanceTest)
 {
     LoadData("TwoOfFourVisitsDueToToDistanceTest/");
 
-    const auto visits = data_storage_.GetVisistsByUserId(27, 1049447100, 1049447319, "Russia", 169);
+    DataStorage::GetVisistsByUserIdQuery query(27);
+    query.to_distance = 169;
+    const auto visits = data_storage_.GetVisistsByUserId(query);
 
     ASSERT_NE(visits, nullptr);
     
+    std::cout << "*visits = " << *visits << std::endl;
+
     AssertEqualJsonDocuments(
             *visits,
             R"({"visits": [{"user": 27, "location": 22, "visited_at": 1049447316, "id": 1, "mark": 3},)"
