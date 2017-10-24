@@ -105,6 +105,15 @@ public:
     UpdateEntityStatus UpdateLocation(
             const Location& location);
 
+    void AddUser(
+            User&& user);
+
+    void AddVisit(
+            Visit&& visit);
+
+    void AddLocation(
+            Location&& location);
+
     ///
     void DumpData() const;
     ///

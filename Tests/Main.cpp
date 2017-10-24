@@ -3,6 +3,7 @@
 #include "DataStorageTests/GetVisitsByUserIdTests/GetVisitsByUserIdTests.h"
 #include "DataStorageTests/UpdateEntityTests/UpdateEntityTests.h"
 #include "DataStorageTests/GetAverageLocationMarkTests/GetAverageLocationMarkTests.h"
+#include "DataStorageTests/AddEntityTests/AddEntityTests.h"
 
 int main(int argc, char* argv[])
 {

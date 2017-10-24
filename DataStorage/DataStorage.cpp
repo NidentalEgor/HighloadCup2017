@@ -483,6 +483,132 @@ DataStorage::UpdateEntityStatus DataStorage::UpdateEntity(
     return UpdateEntityStatus::EntitySuccessfullyUpdated;
 }
 
+void DataStorage::AddUser(
+        User&& user)
+{
+    // users_.emplace_back(user);
+
+    const auto user_id_to_visits = users_to_visits_.find(user.id_);
+    if (user_id_to_visits != users_to_visits_.end())
+    {
+        // const auto visits =
+        //         users_to_visits_
+    }
+    else
+    {
+
+    }
+
+    // MappedIndexes visits_to_user_;
+    // MappedMultiIndexes users_to_visits_;
+    // MappedMultiIndexes locations_to_users_;
+}
+
+void DataStorage::AddVisit(
+        Visit&& visit)
+{
+    visits_.emplace(visit.id_, visit);
+
+    // MappedIndexes visits_to_locations_; // yes
+    // MappedIndexes visits_to_user_; // yes
+    // MappedMultiIndexes users_to_visits_; // yes
+    // MappedMultiIndexes locations_to_visits_; // yes
+
+    visits_to_user_.emplace(
+            visit.id_,
+            visit.user_id_);
+    visits_to_locations_.emplace(
+            visit.id_,
+            visit.location_id_);
+
+    const auto location_id_to_visits =
+            locations_to_visits_.find(visit.location_id_);
+    if (location_id_to_visits == locations_to_visits_.end())
+    {
+        auto emplaced_element =
+                locations_to_visits_.emplace(
+                    visit.location_id_,
+                    std::multimap<Timestamp, uint32_t>());
+        if (emplaced_element.second)
+        {
+            emplaced_element.first->second.emplace(
+                visit.visited_at_,
+                visit.id_);
+        }
+        else
+        {
+            ///
+            // Error!!!
+            ///
+        }
+    }
+    else
+    {
+        ///
+        // Error!!!
+        ///
+    }
+
+    // MappedMultiIndexes users_to_visits_;
+    const auto user_id_to_visits =
+            users_to_visits_.find(visit.user_id_);
+    if (user_id_to_visits != users_to_visits_.end())
+    {
+        // Try to add enywhere - user can not be in two
+        // locations in same time/
+        user_id_to_visits->second.emplace(
+                visit.visited_at_,
+                visit.id_);
+    }
+    else
+    {
+        ///
+        // Error!!!
+        ///
+    }
+}
+
+void DataStorage::AddLocation(
+        Location&& location)
+{
+    // Container<Location> locations_; // yes
+    // MappedIndexes visits_to_locations_; // not nesassary
+    // MappedMultiIndexes locations_to_visits_; // yes
+    // MappedMultiIndexes locations_to_users_; //
+
+    locations_.emplace(location.id_,location);
+
+    const auto location_id_to_visits =
+            locations_to_visits_.find(location.id_);
+    if (location_id_to_visits == locations_to_visits_.end())
+    {
+        locations_to_visits_.emplace(
+                location.id_,
+                std::multimap<Timestamp,uint32_t>());
+    }
+    else
+    {
+        ///
+        // Do nothing???
+        ///
+    }
+
+    const auto location_id_to_users =
+            locations_to_users_.find(location.id_);
+    if (location_id_to_users == locations_to_users_.end())
+    {
+        locations_to_users_.emplace(
+                location.id_,
+                std::multimap<Timestamp, uint32_t>());
+    }
+    else
+    {
+        ///
+        // Do nothing???
+        ///
+    }
+}
+
 ///
 #include <fstream>
 void DataStorage::DumpData() const
