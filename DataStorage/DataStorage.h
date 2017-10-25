@@ -19,12 +19,19 @@ public:
     template <typename T>
     using Container = std::unordered_map<uint32_t, T>;
     using MappedIndexes = std::unordered_map<uint32_t, uint32_t>;
-    using MappedMultiIndexes = std::unordered_map<uint32_t, std::multimap<Timestamp, uint32_t>>;
+    using TimestampToId = std::multimap<Timestamp, uint32_t>;
+    using MappedMultiIndexes = std::unordered_map<uint32_t, TimestampToId>;
 
     enum class UpdateEntityStatus
     {
         EntityNotFound = 0,
         EntitySuccessfullyUpdated
+    };
+
+    enum class AddEntityStatus
+    {
+        EntityAlreadyExist = 0,
+        EntitySuccessfullyAdded
     };
 
     struct GetAverageLocationMarkQuery
@@ -105,13 +112,13 @@ public:
     UpdateEntityStatus UpdateLocation(
             const Location& location);
 
-    void AddUser(
+    AddEntityStatus AddUser(
             User&& user);
 
-    void AddVisit(
+    AddEntityStatus AddVisit(
             Visit&& visit);
 
-    void AddLocation(
+    AddEntityStatus AddLocation(
             Location&& location);
 
     ///

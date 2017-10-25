@@ -483,36 +483,44 @@ DataStorage::UpdateEntityStatus DataStorage::UpdateEntity(
     return UpdateEntityStatus::EntitySuccessfullyUpdated;
 }
 
-void DataStorage::AddUser(
+DataStorage::AddEntityStatus DataStorage::AddUser(
         User&& user)
 {
-    // users_.emplace_back(user);
+    ENSURE_TRUE_OTHERWISE_RETURN(
+            users_.find(user.id_) == users_.end(),
+            DataStorage::AddEntityStatus::EntityAlreadyExist);
 
-    const auto user_id_to_visits = users_to_visits_.find(user.id_);
-    if (user_id_to_visits != users_to_visits_.end())
-    {
-        // const auto visits =
-        //         users_to_visits_
-    }
-    else
-    {
+    users_.emplace(user.id_, user);
 
-    }
+    // May be, it is not necessary
 
-    // MappedIndexes visits_to_user_;
-    // MappedMultiIndexes users_to_visits_;
-    // MappedMultiIndexes locations_to_users_;
+    // const auto user_id_to_visits =
+    //         users_to_visits_.find(user.id_);
+    // if (user_id_to_visits == users_to_visits_.end())
+    // {
+    //     users_to_visits_.emplace(
+    //             user.id_,
+    //             TimestampToId{ {user.birth_date_, user.id_} });
+        
+    // }
+    // else
+    // {
+    //     ///
+    //     // ???
+    //     ///
+    // }
+
+    return AddEntityStatus::EntitySuccessfullyAdded;
 }
 
-void DataStorage::AddVisit(
+DataStorage::AddEntityStatus DataStorage::AddVisit(
         Visit&& visit)
 {
-    visits_.emplace(visit.id_, visit);
+    ENSURE_TRUE_OTHERWISE_RETURN(
+            visits_.find(visit.id_) == visits_.end(),
+            DataStorage::AddEntityStatus::EntityAlreadyExist);
 
-    // MappedIndexes visits_to_locations_; // yes
-    // MappedIndexes visits_to_user_; // yes
-    // MappedMultiIndexes users_to_visits_; // yes
-    // MappedMultiIndexes locations_to_visits_; // yes
+    visits_.emplace(visit.id_, visit);
 
     visits_to_user_.emplace(
             visit.id_,
@@ -528,19 +536,7 @@ void DataStorage::AddVisit(
         auto emplaced_element =
                 locations_to_visits_.emplace(
                     visit.location_id_,
-                    std::multimap<Timestamp, uint32_t>());
-        if (emplaced_element.second)
-        {
-            emplaced_element.first->second.emplace(
-                visit.visited_at_,
-                visit.id_);
-        }
-        else
-        {
-            ///
-            // Error!!!
-            ///
-        }
+                    TimestampToId{ {visit.visited_at_, visit.id_} });
     }
     else
     {
@@ -549,7 +545,6 @@ void DataStorage::AddVisit(
         ///
     }
 
-    // MappedMultiIndexes users_to_visits_;
     const auto user_id_to_visits =
             users_to_visits_.find(visit.user_id_);
     if (user_id_to_visits != users_to_visits_.end())
@@ -566,32 +561,32 @@ void DataStorage::AddVisit(
         // Error!!!
         ///
     }
+
+    return AddEntityStatus::EntitySuccessfullyAdded;
 }
 
-void DataStorage::AddLocation(
+DataStorage::AddEntityStatus DataStorage::AddLocation(
         Location&& location)
 {
-    // Container<Location> locations_; // yes
-    // MappedIndexes visits_to_locations_; // not nesassary
-    // MappedMultiIndexes locations_to_visits_; // yes
-    // MappedMultiIndexes locations_to_users_; //
-
+    ENSURE_TRUE_OTHERWISE_RETURN(
+            locations_.find(location.id_) == locations_.end(),
+            DataStorage::AddEntityStatus::EntityAlreadyExist)
     locations_.emplace(location.id_,location);
 
-    const auto location_id_to_visits =
-            locations_to_visits_.find(location.id_);
-    if (location_id_to_visits == locations_to_visits_.end())
-    {
-        locations_to_visits_.emplace(
-                location.id_,
-                std::multimap<Timestamp,uint32_t>());
-    }
-    else
-    {
-        ///
-        // Do nothing???
-        ///
-    }
+    // const auto location_id_to_visits =
+    //         locations_to_visits_.find(location.id_);
+    // if (location_id_to_visits == locations_to_visits_.end())
+    // {
+    //     locations_to_visits_.emplace(
+    //             location.id_,
+    //             std::multimap<Timestamp,uint32_t>());
+    // }
+    // else
+    // {
+    //     ///
+    //     // Do nothing???
+    //     ///
+    // }
 
     const auto location_id_to_users =
             locations_to_users_.find(location.id_);
@@ -607,6 +602,8 @@ void DataStorage::AddLocation(
         // Do nothing???
         ///
     }
+
+    return DataStorage::AddEntityStatus::EntitySuccessfullyAdded;
 }
 
 ///
