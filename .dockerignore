@@ -1,0 +1,6 @@
+Build/*.txt
+Build/Linux
+build
+.vscode
+*.txt
+!CMakeLists.txt
