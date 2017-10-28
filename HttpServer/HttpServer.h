@@ -66,13 +66,15 @@ public:
             return;
         } 
         
-        std::cout << "buffer_.data() = " << buffer_.data() << std::endl;  
-        const uint32_t id = buffer_.data()[0] - '0'; 
-        const auto answer = data_storage_->GetUserById(id);
-        
+        // std::cout << "buffer_.data() = " << buffer_.data() << std::endl;  
+        // const uint32_t id = buffer_.data()[0] - '0'; 
+        // const auto answer = data_storage_->GetUserById(id);
+        ///
+        auto answer = std::make_unique<std::string>("");
+        ///
         if (answer)
         {
-            std::cout << "Answer = " << *answer << std::endl;
+            // std::cout << "Answer = " << *answer << std::endl;
 
             std::vector<boost::asio::const_buffer> buffers;
             buffers.push_back(
