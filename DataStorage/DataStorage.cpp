@@ -49,6 +49,10 @@ void DataStorage::LoadData(const std::string& folder_path)
     }
 
     MapEntities();
+
+    ///
+//     DumpData();
+    ///
 }
 
 template <typename T>
@@ -59,8 +63,7 @@ void DataStorage::ParseFile(
 {
     using namespace rapidjson;
 
-    FILE* file =
-    fopen(file_path.c_str(), "r");
+    FILE* file = fopen(file_path.c_str(), "r");
     char buffer[65536];
     FileReadStream file_read_stream(
         file,
@@ -96,7 +99,7 @@ void DataStorage::MapEntities()
         {
             visits_to_locations_.emplace(visit.first, location->first);
             locations_to_visits_[location->first].emplace(visit.second.visited_at_, visit.first);
-            locations_to_users_[location->first].emplace(user->second.birth_date_, user->first);
+            locations_to_users_[location->first].emplace(user->second.birth_date, user->first);
             visits_to_user_.emplace(visit.first, user->first);
             users_to_visits_[user->first].emplace(visit.second.visited_at_, visit.first);
         }
@@ -112,19 +115,19 @@ void DataStorage::MapEntities()
 }
 
 std::unique_ptr<std::string> DataStorage::GetLocationById(
-        const uint32_t location_id)
+        const uint32_t location_id) const
 {
     return GetEntityById<Location>(location_id, locations_);
 }
 
 std::unique_ptr<std::string> DataStorage::GetUserById(
-        const uint32_t user_id)
+        const uint32_t user_id) const
 {
     return GetEntityById<User>(user_id, users_);
 }
 
 std::unique_ptr<std::string> DataStorage::GetVisitById(
-        const uint32_t visit_id)
+        const uint32_t visit_id) const
 {
     return GetEntityById<Visit>(visit_id, visits_);
 }
@@ -132,7 +135,7 @@ std::unique_ptr<std::string> DataStorage::GetVisitById(
 template <typename T>
 std::unique_ptr<std::string> DataStorage::GetEntityById(
         const uint32_t entity_id,
-        const Container<T>& entities)
+        const Container<T>& entities) const
 {
     const auto entity = entities.find(entity_id);
             
@@ -309,7 +312,7 @@ void DataStorage::EraseByAge(
                 users_.find(visit_to_user->second);
 
         if (current_user == users_.end() ||
-            comparator(current_user->second.birth_date_, from_age_date))
+            comparator(current_user->second.birth_date, from_age_date))
         {
             current_visit = visits.erase(current_visit);
             continue;
@@ -336,7 +339,7 @@ void DataStorage::EraseByGender(
 
         auto user = users_.find(visit_to_user->second);
         if (user == users_.end() ||
-            gender != user->second.gender_)
+            gender != user->second.gender)
         {
             current_visit = visits.erase(current_visit);
             continue;
@@ -457,6 +460,103 @@ DataStorage::UpdateEntityStatus DataStorage::UpdateVisit(
         const Visit& visit)
 {
     // May I recalc something?
+
+    // MappedIndexes visits_to_locations_; // yes
+    // MappedIndexes visits_to_user_; // yes
+    // MappedMultiIndexes users_to_visits_; // yes
+    // MappedMultiIndexes locations_to_visits_;
+    // MappedMultiIndexes locations_to_users_;
+
+    const auto visit_id_to_location =
+            visits_to_locations_.find(visit.id_);
+    ENSURE_TRUE_OTHERWISE_RETURN(
+            visit_id_to_location != visits_to_locations_.end(),
+            UpdateEntityStatus::EntityNotFound); // ???
+    visits_to_locations_[visit.id_] = visit.location_id_;
+
+    const auto visit_id_to_user =
+            visits_to_user_.find(visit.id_);
+    ENSURE_TRUE_OTHERWISE_RETURN(
+            visit_id_to_user != visits_to_user_.end(),
+            UpdateEntityStatus::EntityNotFound); // ???
+    visits_to_user_[visit.id_] = visit.user_id_;
+
+    ///
+    const auto current_visit =
+            visits_.find(visit.id_);
+    ///
+    if (visit.user_id_ != current_visit->second.user_id_)
+    {
+        const auto user_id_to_visits =
+                users_to_visits_.find(
+                    current_visit->second.user_id_);
+        // ENSURE
+        const auto element_to_erase =
+                user_id_to_visits->second.find(
+                    current_visit->second.visited_at_);
+        //ENSURE
+        user_id_to_visits->second.erase(
+                // current_visit->second.visited_at_);
+                element_to_erase);
+        
+        users_to_visits_[visit.user_id_].emplace(
+                visit.visited_at_,
+                visit.id_);
+    }
+    else
+    {
+
+    }
+
+    const auto location_id_to_visits =
+            locations_to_visits_.find(
+                current_visit->second.location_id_);
+//     ENSURE_TRUE_OTHERWISE_RETURN(
+//             location_id_to_visits != locations_to_visits_.end(),
+//             UpdateEntityStatus::EntityNotFound);
+//     location_id_to_visits->second.erase(
+//             location_id_to_visits->second.find(
+//                 current_visit->second.visited_at_));
+
+    const auto good_visits =
+            location_id_to_visits->second.equal_range(
+                current_visit->second.visited_at_);
+    auto current_good_visit = good_visits.first;
+    while (current_good_visit != good_visits.second)
+    {
+        if (current_good_visit->second == current_visit->first)
+        {
+            current_good_visit =
+                    location_id_to_visits->second.erase(
+                        current_good_visit);
+        }
+        else
+        {
+            ++current_good_visit;
+        }
+    }
+
+    locations_to_visits_[visit.location_id_].emplace(
+            visit.visited_at_,
+            visit.id_);
+    
+    const auto location_id_to_users =
+            locations_to_users_.find(current_visit->second.location_id_);
+    // ENSURE
+    auto user = users_.find(current_visit->second.user_id_);
+    locations_to_users_[current_visit->second.location_id_].erase(user->second.birth_date);
+    user = users_.find(visit.user_id_);
+    if (user != users_.end())
+    {
+        locations_to_users_[visit.location_id_].emplace(
+                user->second.birth_date,
+                user->first);
+    }
+    else
+    {
+        std::cout << "if not (user != users_.end())" << std::endl;
+    }
+    
     return UpdateEntity<Visit>(visit, visits_);
 }
 
@@ -533,33 +633,32 @@ DataStorage::AddEntityStatus DataStorage::AddVisit(
             locations_to_visits_.find(visit.location_id_);
     if (location_id_to_visits == locations_to_visits_.end())
     {
-        auto emplaced_element =
-                locations_to_visits_.emplace(
-                    visit.location_id_,
-                    TimestampToId{ {visit.visited_at_, visit.id_} });
+        locations_to_visits_.emplace(
+                visit.location_id_,
+                TimestampToId{ {visit.visited_at_, visit.id_} });
     }
     else
     {
-        ///
-        // Error!!!
-        ///
+        location_id_to_visits->second.emplace(
+                visit.visited_at_,
+                visit.id_);
     }
 
     const auto user_id_to_visits =
             users_to_visits_.find(visit.user_id_);
-    if (user_id_to_visits != users_to_visits_.end())
+    if (user_id_to_visits == users_to_visits_.end())
+    {
+        users_to_visits_.emplace(
+                visit.user_id_,
+                TimestampToId{ {visit.visited_at_, visit.id_} });
+    }
+    else
     {
         // Try to add enywhere - user can not be in two
         // locations in same time/
         user_id_to_visits->second.emplace(
                 visit.visited_at_,
                 visit.id_);
-    }
-    else
-    {
-        ///
-        // Error!!!
-        ///
     }
 
     return AddEntityStatus::EntitySuccessfullyAdded;
@@ -618,10 +717,10 @@ void DataStorage::DumpData() const
     }
 
     std::ofstream out_usr("visits_to_user.txt");
-    for (const auto& visit_to_location : visits_to_locations_)
+    for (const auto& visit_to_user : visits_to_user_)
     {
-        out_usr << "visit_id = " << visit_to_location.first <<
-                " user_id = " << visit_to_location.second << std::endl;
+        out_usr << "visit_id = " << visit_to_user.first <<
+                " user_id = " << visit_to_user.second << std::endl;
     }
 
     std::ofstream out_loc_ser("locations.txt");
@@ -634,6 +733,22 @@ void DataStorage::DumpData() const
     for (const auto& user : users_)
     {
         out_usr_ser << *user.second.Serialize() << std::endl;
+    }
+
+    std::ofstream out_vis_ser("visits.txt");
+    for (const auto& visit : visits_)
+    {
+        out_vis_ser << *visit.second.Serialize() << std::endl;
+    }
+
+    std::ofstream out_loc_to_vis_ser("locations_to_visits.txt");
+    for (const auto& location_to_visits : locations_to_visits_)
+    {
+        for (const auto location_to_visit : location_to_visits.second)
+        {
+            out_loc_to_vis_ser << "location = " << location_to_visits.first <<
+                    " visit = " << location_to_visit.second << std::endl;
+        }
     }
 }
 ///

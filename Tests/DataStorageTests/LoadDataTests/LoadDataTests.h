@@ -53,8 +53,16 @@ TEST_F(DataStorageLoadDataTest, TwoExemplarOfEachEntityTest)
     AssertEntitiesAmount(2);
 }
 
+#include <chrono>
 TEST_F(DataStorageLoadDataTest, BigDataTest)
 {
     // Add path to big data!
-    LoadData("/");
+    auto start = std::chrono::high_resolution_clock::now();
+    // do some work
+    // data_storage_.LoadData("/home/egor/Repositories/hlcupdocs/data/FULL/data/");
+    data_storage_.LoadData("/home/egor/Repositories/hlcupdocs/data/TRAIN/data/");
+    // record end time
+    auto end = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> diff = end - start;
+    std::cout << "Time: " << diff.count() << " s\n";
 }

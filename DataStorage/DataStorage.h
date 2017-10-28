@@ -37,7 +37,7 @@ public:
     struct GetAverageLocationMarkQuery
     {
     public:
-        GetAverageLocationMarkQuery(
+        explicit GetAverageLocationMarkQuery(
                 const uint32_t id)
             : id(id)
         {
@@ -55,7 +55,7 @@ public:
     struct GetVisistsByUserIdQuery
     {
     public:
-        GetVisistsByUserIdQuery(
+        explicit GetVisistsByUserIdQuery(
                 const uint32_t id)
             : id(id)
         {
@@ -89,13 +89,13 @@ public:
     }
 
     std::unique_ptr<std::string> GetLocationById(
-            const uint32_t location_id);
+            const uint32_t location_id) const;
 
     std::unique_ptr<std::string> GetUserById(
-            const uint32_t user_id);
+            const uint32_t user_id) const;
 
     std::unique_ptr<std::string> GetVisitById(
-            const uint32_t visit_id);
+            const uint32_t visit_id) const;
 
     std::unique_ptr<std::string> GetVisistsByUserId(
             const GetVisistsByUserIdQuery& query_description) const;
@@ -134,7 +134,7 @@ private:
     template <typename T>
     std::unique_ptr<std::string> GetEntityById(
             const uint32_t entity_id,
-            const Container<T>& entities);
+            const Container<T>& entities) const;
 
     template <typename T>
     DataStorage::UpdateEntityStatus UpdateEntity(

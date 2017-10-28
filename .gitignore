@@ -2,3 +2,6 @@ Build
 Submodules/rapidjson
 Submodules/googletest
 .vscode
+*.txt
+build/*
+

@@ -1,0 +1,5 @@
+{"visits": [
+    {"user": 1, "location": 1, "visited_at": 1049447314, "id": 1, "mark": 1},
+    {"user": 1, "location": 1, "visited_at": 1049447316, "id": 2, "mark": 2},
+    {"user": 1, "location": 2, "visited_at": 1049447316, "id": 3, "mark": 3},
+    {"user": 1, "location": 2, "visited_at": 1049447316, "id": 4, "mark": 4}]}

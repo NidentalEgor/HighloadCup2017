@@ -19,12 +19,14 @@ enum class Gender
     Any
 };
 
-class User
+struct User
     : public Identifiable
     , public IDeserializable
     , public ISerializable
 {
 public:
+    User();
+
     User(
         const uint32_t id,
         const std::string& email,
@@ -32,22 +34,18 @@ public:
         const std::string& last_name,
         const Gender gender,
         const Timestamp birth_date);
-    
-    User();
-
-    // User(const rapidjson::Value& user_element);
 
     void Deserialize(
             const rapidjson::Value& user_element) override final;
 
     std::unique_ptr<std::string> Serialize() const override final;
     
-// private:
-    std::string email_;
-    std::string first_name_;
-    std::string last_name_;
-    Gender gender_;
-    Timestamp birth_date_;
+public:
+    std::string email;
+    std::string first_name;
+    std::string last_name;
+    Gender gender;
+    Timestamp birth_date;
 };
 
 #endif // USER_H_INCLUDED
