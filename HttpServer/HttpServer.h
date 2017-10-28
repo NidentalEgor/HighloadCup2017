@@ -70,7 +70,7 @@ public:
         // const uint32_t id = buffer_.data()[0] - '0'; 
         // const auto answer = data_storage_->GetUserById(id);
         ///
-        auto answer = std::make_unique<std::string>("");
+        auto answer = std::make_unique<std::string>("Hello from server!");
         ///
         if (answer)
         {
