@@ -23,12 +23,8 @@ target_link_libraries(GoogleTest ${CMAKE_THREAD_LIBS_INIT})
 
 add_definitions(-DRAPIDJSON_HAS_CXX11_RVALUE_REFS)
 # add_definitions(-DRAPIDJSON_HAS_STDSTRING)
+set(RAPIDJSON_BUILD_TESTS OFF CACHE INTERNAL "" FORCE) # Due to -Werror in rapidjson tests.
 add_subdirectory(rapidjson)
-# add_subdirectory(beast)
-
-# add_custom_target(HttpParser ALL
-#   COMMAND ${CMAKE_MAKE_PROGRAM}
-#   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/http-parser)
 
 add_library(http_parser http-parser/http_parser.c)
 add_library(libyuarel libyuarel/yuarel.c)

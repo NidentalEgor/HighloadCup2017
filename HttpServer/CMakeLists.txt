@@ -1,4 +1,3 @@
-MESSAGE(EGOR EGOR EGOR ${PROJECT_SOURCE_DIR})
 include_directories(${PROJECT_SOURCE_DIR}/DataStorage)
 # include_directories(${PROJECT_SOURCE_DIR}/Submodules/http-parser)
 include_directories(${PROJECT_SOURCE_DIR}/HttpParser)
