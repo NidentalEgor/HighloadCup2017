@@ -30,5 +30,5 @@ add_subdirectory(rapidjson)
 #   COMMAND ${CMAKE_MAKE_PROGRAM}
 #   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/http-parser)
 
-add_subdirectory(http-parser)
-add_subdirectory(libyuarel)
+add_library(http_parser http-parser/http_parser.c)
+add_library(libyuarel libyuarel/yuarel.c)

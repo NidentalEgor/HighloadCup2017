@@ -7,3 +7,6 @@
 [submodule "Submodules/http-parser"]
 	path = Submodules/http-parser
 	url = https://github.com/nodejs/http-parser.git
+[submodule "Submodules/libyuarel"]
+	path = Submodules/libyuarel
+	url = https://github.com/jacketizer/libyuarel.git
