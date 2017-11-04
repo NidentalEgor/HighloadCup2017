@@ -11,7 +11,7 @@ class UpdateEntityTests
 {
 public:
     UpdateEntityTests()
-        : TestDataLoadableTest(R"(/home/egor/Repositories/HighloadCup2017/)"
+        : TestDataLoadableTest(R"(/home/egor/Repositories/highloadcup2017/)"
             R"(Tests/DataStorageTests/UpdateEntityTests/TestData/)")
         , entity_id(1234)
     {

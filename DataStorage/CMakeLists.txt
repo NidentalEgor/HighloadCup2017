@@ -16,4 +16,7 @@ file(GLOB DATA_STORAGE_SOURCES
   ${DATA_STORAGE_DIR}/Entities/*.cpp
   ${DATA_STORAGE_DIR}/Entities/*.h)
 
+# include_directories(${PROJECT_SOURCE_DIR}/Submodules/http-parser)
+# link_directories(${PROJECT_SOURCE_DIR}/Submodules/http-parser)
+
 add_library(data_storage STATIC ${DATA_STORAGE_SOURCES})

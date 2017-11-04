@@ -10,7 +10,7 @@ class DataStorageComplexTest
 {
 public:
     DataStorageComplexTest()
-        : TestDataLoadableTest(R"(/home/egor/Repositories/HighloadCup2017/)"
+        : TestDataLoadableTest(R"(/home/egor/Repositories/highloadcup2017/)"
         R"(Tests/DataStorageTests/ComplexTests/TestData/)")
     {
     }

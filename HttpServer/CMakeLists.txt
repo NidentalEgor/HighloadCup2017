@@ -1,9 +1,12 @@
-set(HTTP_SERVER_DIR ${CMAKE_CURRENT_SOURCE_DIR})
-
+MESSAGE(EGOR EGOR EGOR ${PROJECT_SOURCE_DIR})
 include_directories(${PROJECT_SOURCE_DIR}/DataStorage)
+# include_directories(${PROJECT_SOURCE_DIR}/Submodules/http-parser)
+include_directories(${PROJECT_SOURCE_DIR}/HttpParser)
 
-file(GLOB HTTP_SERVER_SOURCES ${SERVER_DIR}/*.cpp ${SERVER_DIR}/*.h)
+# link_directories(${PROJECT_SOURCE_DIR}/Submodules/http-parser)
+
+file(GLOB HTTP_SERVER_SOURCES HttpServer.cpp HttpServer.h)
 
 add_library(http_server STATIC ${HTTP_SERVER_SOURCES})
 
-target_link_libraries(http_server data_storage)
+target_link_libraries(http_server data_storage Http_Parser)

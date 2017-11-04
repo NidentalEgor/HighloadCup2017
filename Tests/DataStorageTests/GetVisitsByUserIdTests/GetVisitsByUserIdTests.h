@@ -13,7 +13,7 @@ class GetVisitsByUserIdTests
 {
 public:
     GetVisitsByUserIdTests()
-        : TestDataLoadableTest(R"(/home/egor/Repositories/HighloadCup2017/)"
+        : TestDataLoadableTest(R"(/home/egor/Repositories/highloadcup2017/)"
             R"(Tests/DataStorageTests/GetVisitsByUserIdTests/TestData/)")
     {
     }

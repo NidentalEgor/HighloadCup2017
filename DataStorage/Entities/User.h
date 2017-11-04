@@ -12,12 +12,12 @@
 #include "IDeserializable.h"
 #include "Visit.h"
 
-enum class Gender
-{
-    Male,
-    Female,
-    Any
-};
+// enum class Gender
+// {
+//     Male,
+//     Female,
+//     Any
+// };
 
 struct User
     : public Identifiable

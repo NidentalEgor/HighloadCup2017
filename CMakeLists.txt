@@ -7,6 +7,8 @@ SET(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} "-std=c++14 -pthread")
 
 # temp
 include_directories(${SERVER_DIR}/HttpServer)
+include_directories(${SERVER_DIR}/HttpParser)
+include_directories(/home/egor/Repositories/highloadcup2017/Submodules/http-parser)
 include_directories(${SERVER_DIR}/DataStorage)
 include_directories(${SERVER_DIR}/Submodules/rapidjson/include)
 include_directories(${SERVER_DIR}/Utils)
@@ -24,13 +26,17 @@ endif(Boost_FOUND)
 
 set(BOOST_LIBS ${Boost_SYSTEM_LIBRARY} ${Boost_THREAD_LIBRARY} ${Boost_REGEX_LIBRARY})
 
-add_executable(Server ${SERVER_SOURCES})
+include(CMakeToolsHelpers OPTIONAL)
 
-TARGET_LINK_LIBRARIES(Server data_storage ${BOOST_LIBS})
+add_executable(Server ${SERVER_SOURCES})
 
 add_subdirectory(Submodules)
 add_subdirectory(DataStorage)
 add_subdirectory(Tests)
+add_subdirectory(HttpParser)
+
+TARGET_LINK_LIBRARIES(Server data_storage Http_Parser ${BOOST_LIBS})
+
 
 
 

@@ -2,15 +2,6 @@
 #define HTTP_SERVER_H_INCLUDED
 #pragma once
 
-// class HttpServer
-// {
-// public:
-//     HttpServer();
-//     void Run();
-// private:
-
-// };
-
 #include <boost/noncopyable.hpp>
 #include <boost/asio.hpp>
 #include <boost/shared_ptr.hpp>
@@ -20,7 +11,10 @@
 #include <boost/enable_shared_from_this.hpp>
 #include <boost/array.hpp>
 
-#include "DataStorage.h"
+#include "../HttpParser/HttpParser.h"
+#include "../Utils/Macroses.h"
+#include "../Utils/Traceable.h"
+#include "../DataStorage/DataStorage.h"
 
 namespace Network
 {
@@ -31,6 +25,7 @@ namespace Private
 class Connection
     : private boost::noncopyable
     , public boost::enable_shared_from_this<Connection>
+    , public Traceable
 {
 public:
     Connection(
@@ -42,9 +37,13 @@ public:
     {
     }
 
+    ~Connection()
+    {
+    }
+
     boost::asio::ip::tcp::socket& GetSocket()
     {
-      return socket_;
+        return socket_;
     }
 
     void Start()
@@ -59,38 +58,176 @@ public:
                         boost::asio::placeholders::bytes_transferred)));
     }
 
-    void HandleRead(boost::system::error_code const &error, std::size_t bytes)
+    void FillAverageLocationMarkQuery(
+            const HttpParser& http_parser,
+            DataStorage::GetAverageLocationMarkQuery query)
+    {
+        const int mask =
+                http_parser.GetAdditionalInfoMask();
+
+        if (mask & static_cast<int>(HttpParser::HttpParserFlags::FromDateFlag))
+        {
+            query.from_date = http_parser.GetFromDate();
+        }
+
+        if (mask & static_cast<int>(HttpParser::HttpParserFlags::ToDateFlag))
+        {
+            query.to_date = http_parser.GetToDate();
+        }
+
+        if (mask & static_cast<int>(HttpParser::HttpParserFlags::FromAgeFlag))
+        {
+            query.from_age = http_parser.GetFromAge();
+        }
+
+        if (mask & static_cast<int>(HttpParser::HttpParserFlags::ToAgeFlag))
+        {
+            query.to_age = http_parser.GetToAge();
+        }
+
+        if (mask & static_cast<int>(HttpParser::HttpParserFlags::GenderFlag))
+        {
+            query.gender = http_parser.GetGender();
+        }
+    }
+
+    void FillVisistsByUserIdQuery(
+            const HttpParser& http_parser,
+            DataStorage::GetVisistsByUserIdQuery query)
+    {
+        const int mask =
+                http_parser.GetAdditionalInfoMask();
+        
+        if (mask & static_cast<int>(HttpParser::HttpParserFlags::FromDateFlag))
+        {
+            query.from_date = http_parser.GetFromDate();
+        }
+
+        if (mask & static_cast<int>(HttpParser::HttpParserFlags::ToDateFlag))
+        {
+            query.to_date = http_parser.GetToDate();
+        }
+
+        if (mask & static_cast<int>(HttpParser::HttpParserFlags::CountryFlag))
+        {
+            query.country = http_parser.GetCountry();
+        }
+
+        if (mask & static_cast<int>(HttpParser::HttpParserFlags::ToDistanceFlag))
+        {
+            query.to_distance = http_parser.GetToDistance();
+        }
+    }
+
+    std::unique_ptr<std::string> ProcessRequest(
+            const char* message,
+            const size_t message_size)
+    {
+        HttpParser http_parser;
+        ENSURE_TRUE_OTHERWISE_RETURN(
+                http_parser.ParseHttpRequest(
+                    const_cast<char*>(message),
+                    message_size),
+                nullptr);
+
+        std::unique_ptr<std::string> result;
+        switch (http_parser.GetRequestType())
+        {
+            case HttpParser::RequestType::GetUserById:
+            {
+                result =
+                    data_storage_->GetUserById(http_parser.GetEntityId());
+            } break;
+
+            case HttpParser::RequestType::GetVisitById:
+            {
+                result =
+                    data_storage_->GetVisitById(http_parser.GetEntityId());
+            } break;
+
+            case HttpParser::RequestType::GetLocationById:
+            {
+                result =
+                    data_storage_->GetLocationById(http_parser.GetEntityId());
+            } break;
+
+            case HttpParser::RequestType::GetAverageLocationMark:
+            {
+                DataStorage::GetAverageLocationMarkQuery query(
+                        http_parser.GetEntityId());
+                
+                const auto mask =
+                        http_parser.GetAdditionalInfoMask();
+
+                FillAverageLocationMarkQuery(
+                        http_parser,
+                        query);
+                
+                result =
+                    data_storage_->GetAverageLocationMark(query);
+            } break;
+
+            case HttpParser::RequestType::GetVisitsByUserId:
+            {
+                DataStorage::GetVisistsByUserIdQuery query(
+                        http_parser.GetEntityId());
+
+                FillVisistsByUserIdQuery(
+                        http_parser,
+                        query);
+
+                result =
+                    data_storage_->GetVisistsByUserId(query);
+            } break;
+
+            default:
+            {
+                return nullptr;
+            }
+        }
+
+        return result;
+    }
+
+    void HandleRead(
+            boost::system::error_code const &error,
+            std::size_t message_size)
     {
         if (error)
         {
             return;
         } 
-        
-        std::cout << "buffer_.data() = " << buffer_.data() << std::endl;  
-        // const uint32_t id = buffer_.data()[0] - '0'; 
-        // const auto answer = data_storage_->GetUserById(id);
+
         ///
-        auto answer = std::make_unique<std::string>("{}");
+        std::cout << "buffer_.data() = " << buffer_.data() << std::endl << std::endl;
         ///
-        if (answer)
+
+        Trace("Request parsing begin...");
+        const auto answer =
+                ProcessRequest(buffer_.data(), message_size);
+        Trace("Request parsing end...");
+  
+        if (!answer)
         {
-            // std::cout << "Answer = " << *answer << std::endl;
-
-            std::vector<boost::asio::const_buffer> buffers;
-            buffers.push_back(
-                    boost::asio::const_buffer(
-                        answer->c_str(),
-                        answer->size()));
-
-            boost::asio::async_write(
-                socket_,
-                buffers,
-                strand_.wrap(
-                    boost::bind(
-                        &Connection::HandleWrite,
-                        shared_from_this(),
-                        boost::asio::placeholders::error)));
+            return;
         }
+
+        std::cout << "Answer = " << *answer << std::endl;
+
+        std::vector<boost::asio::const_buffer> buffers;
+        buffers.push_back(
+                boost::asio::const_buffer(
+                    answer->c_str(),
+                    answer->size()));
+
+        boost::asio::async_write(
+            socket_,
+            buffers,
+            strand_.wrap(
+                boost::bind(
+                    &Connection::HandleWrite,
+                    shared_from_this(),
+                    boost::asio::placeholders::error)));
     }
 
     void HandleWrite(
@@ -116,9 +253,12 @@ private:
 };
     
 } // namespace Private
-  
+
+
+
 class EchoServer
     : private boost::noncopyable
+    , public Traceable
 {
 public:
     EchoServer(
@@ -128,12 +268,12 @@ public:
         : acceptor_(io_service_)
         , threads_(threadsCount)
     {
-        std::cout << "Data storage data loading..." << std::endl;
+        Trace("Data storage data loading...");
 
         data_storage_ = boost::make_shared<DataStorage>();
         data_storage_->LoadData("/home/egor/Repositories/hlcupdocs/data/TRAIN/data/");
 
-        std::cout << "Data storage is ready..." << std::endl;
+        Trace("Data storage is ready...");
 
         boost::asio::ip::tcp::resolver resolver(io_service_);
         boost::asio::ip::tcp::resolver::query query(locAddr, port);

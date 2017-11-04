@@ -10,7 +10,7 @@ class DataStorageGetEntitiesTest
 public:
     static void SetUpTestCase()
     {
-        data_storage_.LoadData("/home/egor/Repositories/HighloadCup2017/Tests/DataStorageTests/GetEntityByIdTests/TestData/");
+        data_storage_.LoadData("/home/egor/Repositories/highloadcup2017/Tests/DataStorageTests/GetEntityByIdTests/TestData/");
     }
 
 protected:

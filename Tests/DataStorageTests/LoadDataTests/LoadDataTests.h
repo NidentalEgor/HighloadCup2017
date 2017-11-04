@@ -21,7 +21,7 @@ protected:
     DataStorage data_storage_;
     // Temp solution.
     // std::string test_data_folder_path_ = R"(../../../../Tests/DataStorageTests/LoadDataTests/TestData/)";
-    std::string test_data_folder_path_ = R"(/home/egor/Repositories/HighloadCup2017/Tests/DataStorageTests/LoadDataTests/TestData/)";
+    std::string test_data_folder_path_ = R"(/home/egor/Repositories/highloadcup2017/Tests/DataStorageTests/LoadDataTests/TestData/)";
     // Temp solution.
 };
 

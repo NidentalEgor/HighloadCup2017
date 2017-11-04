@@ -10,6 +10,6 @@ int main(int argc, char* argv[])
 {
 	testing::InitGoogleTest(&argc, argv);
 	// ::testing::GTEST_FLAG(filter) = "DataStorageComplexTest.CheckAverageLocationAfterVisitUpdateTest";
-	::testing::GTEST_FLAG(filter) = "DataStorageLoadDataTest.BigDataTest";
+	// ::testing::GTEST_FLAG(filter) = "DataStorageLoadDataTest.BigDataTest";
 	return RUN_ALL_TESTS();
 }

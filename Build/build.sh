@@ -9,6 +9,7 @@ elif [[ $1 == "" ]]; then
   build_type="Release"
 else
   echo "Error! Build type is invalid!"; exit $ERRCODE;
+
 fi
 mkdir Linux
 cd Linux
