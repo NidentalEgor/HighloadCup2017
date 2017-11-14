@@ -150,8 +150,6 @@ TEST_F(GetVisitsByUserIdTests, TwoOfFourVisitsDueToToDistanceTest)
 
     ASSERT_NE(visits, nullptr);
     
-    std::cout << "*visits = " << *visits << std::endl;
-
     AssertEqualJsonDocuments(
             *visits,
             R"({"visits": [{"user": 27, "location": 22, "visited_at": 1049447316, "id": 1, "mark": 3},)"

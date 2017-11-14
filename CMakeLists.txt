@@ -12,6 +12,7 @@ include_directories(/home/egor/Repositories/highloadcup2017/Submodules/http-pars
 include_directories(${SERVER_DIR}/DataStorage)
 include_directories(${SERVER_DIR}/Submodules/rapidjson/include)
 include_directories(${SERVER_DIR}/Utils)
+include_directories(${SERVER_DIR}/DataExtracter)
 # temp
 
 file(GLOB SERVER_SOURCES ${SERVER_DIR}/*.cpp)
@@ -34,10 +35,12 @@ add_subdirectory(Submodules)
 add_subdirectory(DataStorage)
 add_subdirectory(Tests)
 add_subdirectory(HttpParser)
+add_subdirectory(DataExtracter)
+add_subdirectory(Utils)
 
-TARGET_LINK_LIBRARIES(Server data_storage Http_Parser ${BOOST_LIBS})
-
-
-
-
-
+TARGET_LINK_LIBRARIES(Server
+  data_storage
+  Http_Parser
+  DataExtracter
+  Traceable
+  ${BOOST_LIBS})

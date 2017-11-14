@@ -43,9 +43,6 @@ void DoJob()
     // out << "My id = " << std::this_thread::get_id() << std::endl;
     // out.close();
 
-    std::cout << "Hello from thread " <<
-        std::this_thread::get_id() << std::endl;
-
     const int master_socket = socket(
         AF_INET,
         SOCK_STREAM,
@@ -62,13 +59,13 @@ void DoJob()
     auto set_nonblock_ret = SetNonblock(master_socket);
     if (set_nonblock_ret == -1)
     {
-        std::cout << "if (set_nonblock_ret == -1)" << std::endl;
+        DebugTrace("if (set_nonblock_ret == -1)");
     }
 
     auto listen_ret = listen(master_socket, SOMAXCONN);
     if (listen_ret == -1)
     {
-        std::cout << "if (listen_ret == -1)" << std::endl;
+        DebugTrace("if (listen_ret == -1)");
     }
 
     const int EPoll = epoll_create1(0);

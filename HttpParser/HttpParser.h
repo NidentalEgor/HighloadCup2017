@@ -5,11 +5,14 @@
 #include <string>
 #include <memory>
 
-#include "http_parser.h"
+#include "../Submodules/http-parser/http_parser.h"
+#include "../Submodules/libyuarel/yuarel.h"
 
 #include "../DataStorage/Entities/DataTypes.h"
+#include "../Utils/Traceable.h"
 
-class HttpParser final
+class HttpParser
+    : public Traceable
 {
 public:
     enum class HttpParserFlags
@@ -39,10 +42,39 @@ public:
         AddLocation
     };
 
+    enum class ErrorType
+    {
+        ErrorTypeOk,
+        ErrorTypeBadRequest,
+        ErrorTypeNotFound
+    };
+
+    enum class HttpRequestType
+    {
+        HttpRequestTypeGet,
+        HttpRequestTypePost
+    };
+
+    struct HttpRequest
+    {
+        yuarel_param url_params[500];
+        int params_size = 0;
+        const char* body = nullptr;
+        size_t body_length = 0;
+    };
+
+    struct HttpData
+    {
+        HttpRequest request;
+        unsigned int method;
+        const char* url = nullptr;
+        size_t url_length = 0;
+    };
+
 public:
     HttpParser();
 
-    bool ParseHttpRequest(
+    ErrorType ParseHttpRequest(
             /*const*/ char* request,
             const size_t readed);
 
@@ -96,9 +128,14 @@ public:
         return to_distance_;
     }
 
-    std::string GetBodyContent()
+    const char* GetBodyContent()
     {
-        return entity_content_;
+        return entity_content_.c_str();
+    }
+
+    HttpRequestType GetHttpRequestType() const
+    {
+        return current_request_type_;
     }
 
 private:
@@ -126,10 +163,13 @@ private:
             const char* position,
             size_t length);
     
-    bool Route(
+    HttpParser::ErrorType Route(
             char** parts,
             unsigned int method,
             const size_t parts_amount);
+    
+    HttpParser::ErrorType SplitQuery(
+            char* query);
 
 private:
     std::unique_ptr<http_parser> parser_;
@@ -145,8 +185,9 @@ private:
     uint32_t to_distance_;
     int additional_info_mask_;
     std::string entity_content_;
-
+    HttpData http_data_;
     size_t MAX_PATH_SIZE = 10;
+    HttpRequestType current_request_type_;
 };
 
 #endif // HTTP_PARSER_H_INCLUDED

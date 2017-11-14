@@ -2,11 +2,13 @@
 #define VISIT_H_INCLUDED
 #pragma once
 
-#include "rapidjson/document.h"
+#include "../../Submodules/rapidjson/include/rapidjson/document.h"
+
 #include "Identifiable.h"
 #include "DataTypes.h"
 #include "ISerializable.h"
 #include "IDeserializable.h"
+#include "IValidateable.h"
 
 using Mark = short;
 
@@ -14,6 +16,7 @@ class Visit
     : public Identifiable
     , public IDeserializable
     , public ISerializable
+    , public IValidateable
 {
 public:
     Visit(
@@ -29,6 +32,9 @@ public:
             const rapidjson::Value& visit_element) override final;
 
     std::unique_ptr<std::string> Serialize() const override final;
+
+    bool Validate(
+            const char* content) override;
 
     // Visit(const rapidjson::Value& visit_element);
 

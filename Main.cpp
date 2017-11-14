@@ -3,12 +3,20 @@
 #include "HttpServer.h"
 #include "DataStorage.h"
 #include "HttpParser.h"
+#include "DataExtracter.h"
 
 int main(int argc, char* argv[])
 {
     try
     {
+        DataExtracter data_extracter;
+        data_extracter.ExtractData(
+                "/tmp/data/data.zip",
+                "/tmp/data");
+        // For docker
         // Network::EchoServer Srv("0.0.0.0", "80", 4);
+        // For docker
+
         // Network::EchoServer Srv("192.168.2.103", "5555", 4);
         Network::EchoServer Srv("127.0.0.1", "5555", 4);
         
@@ -16,6 +24,7 @@ int main(int argc, char* argv[])
     }
     catch (std::exception const &e)
     {
+        std::cout << "catch (std::exception const &e)" << std::endl;
         std::cerr << e.what() << std::endl;
     }
     return 0;

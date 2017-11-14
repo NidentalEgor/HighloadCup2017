@@ -1,6 +1,12 @@
 #include <sstream>
 
+#include "Macroses.h"
+
 #include "Visit.h"
+
+//
+#include <iostream>
+//
 
 Visit::Visit(
         const uint32_t id,
@@ -67,4 +73,48 @@ std::unique_ptr<std::string> Visit::Serialize() const
             ",\"mark\":" << mark_ << '}';
 
     return std::make_unique<std::string>(str.str());
+}
+
+bool Visit::Validate(
+            const char* content)
+{
+    std::cout << "content = " << content << std::endl;
+
+    rapidjson::Document json_content;;
+
+    ENSURE_TRUE_OTHERWISE_RETURN(
+            !json_content.Parse(content).HasParseError(),
+            false);
+
+    // assert(document.IsObject()
+
+    std::cout << "location" << std::endl;
+    //Trace("location");
+    ENSURE_TRUE_OTHERWISE_RETURN(
+            json_content.HasMember("location") &&
+                json_content["location"].IsUint(),
+            false);
+
+    std::cout << "user" << std::endl;
+    //Trace("user");
+    ENSURE_TRUE_OTHERWISE_RETURN(
+            json_content.HasMember("user") &&
+                json_content["user"].IsUint(),
+            false);
+
+    std::cout << "visited_at" << std::endl;
+    //Trace("visited_at");
+    ENSURE_TRUE_OTHERWISE_RETURN(
+            json_content.HasMember("visited_at") &&
+                json_content["visited_at"].IsInt64(),
+            false);
+
+    std::cout << "mark" << std::endl;
+    //Trace("mark\n");
+    ENSURE_TRUE_OTHERWISE_RETURN(
+            json_content.HasMember("mark") &&
+                json_content["visited_at"].IsUint64(),
+            false);
+
+    return true;
 }

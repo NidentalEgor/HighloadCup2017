@@ -1,41 +1,28 @@
 #include <sys/uio.h>
 #include <cstring>
 #include <iostream>
+#include <cstring>
 
-#include "yuarel.h"
+#include "../Submodules/qs_parse/qs_parse.h"
 
 #include "../Utils/Macroses.h"
 
 #include "HttpParser.h"
-
-struct HttpRequest
-{
-    yuarel_param url_params[500];
-    int params_size = 0;
-    const char* body = nullptr;
-    size_t body_length = 0;
-};
-
-struct HttpData
-{
-    HttpRequest request;
-    unsigned int method;
-    const char* url = nullptr;
-    size_t url_length = 0;
-};
-
-HttpData http_data;
 
 int HttpParser::OnUrl(
         http_parser* parser,
         const char* position,
         size_t length)
 {
-    std::cout << "OnUrl" << std::endl;
+    // Trace(__FILENAME__, __LINE__, "OnUrl");
+    // TraceCharacters(position, length);
+
     HttpData* http_data =
             reinterpret_cast<HttpData*>(parser->data);
+
     http_data->url = position;
     http_data->url_length = length;
+
     return 0;
 }
   
@@ -44,11 +31,15 @@ int HttpParser::OnBody(
         const char* position,
         size_t length)
 {
-    std::cout << "OnBody" << std::endl;
+    // Trace(__FILENAME__, __LINE__, "OnBody");
+    // TraceCharacters(position, length);
+
     HttpData* http_data =
             reinterpret_cast<HttpData*>(parser->data);
+
     http_data->request.body = position;
     http_data->request.body_length = length;
+
     return 0;
 }
 
@@ -89,23 +80,36 @@ std::pair<bool, long long> StringToNumber(
     return std::make_pair(true, result);
 }
 
-bool HttpParser::Route(
+HttpParser::ErrorType HttpParser::Route(
         char** parts,
         unsigned int method,
         const size_t parts_amount)
 {
-    ENSURE_TRUE_OTHERWISE_RETURN(
-            (parts_amount > 3 || parts_amount < 2),
-            false);
-
+    DebugTrace("HttpParser::Route");
+    Trace(__FILENAME__, __LINE__, "parts_amount = {}", parts_amount);
+    // ENSURE_TRUE_OTHERWISE_RETURN(
+    //         (parts_amount == 3 || parts_amount == 2),
+    //         ErrorType::ErrorTypeBadRequest);
+    // Trace("109");
+    // Trace("109");
+    // Trace("109");
+    // Trace("method = {}", static_cast<int>(method));
     switch (method)
     {
         case HTTP_GET:
         {
+            DebugTrace("case HTTP_GET");
+
             const auto id =
                     StringToNumber(parts[1]);
 
-            ENSURE_TRUE_OTHERWISE_RETURN(id.first, false);
+            // Trace("119");
+            // Trace("119");
+            // Trace("119");
+
+            ENSURE_TRUE_OTHERWISE_RETURN(
+                    id.first,
+                    ErrorType::ErrorTypeNotFound);
 
             entity_id_ = id.second;
 
@@ -113,12 +117,21 @@ bool HttpParser::Route(
             {
                 case 'u':
                 {
+                    ENSURE_TRUE_OTHERWISE_RETURN(
+                                strcmp(parts[0], "users") == 0,
+                                ErrorType::ErrorTypeBadRequest);
+
                     if (parts_amount == 2)         // /users/<id>
                     {
                         request_type_ = RequestType::GetUserById;
                     }
                     else                           // /users/<id>/visits
                     {
+                        // Trace("139");
+                        ENSURE_TRUE_OTHERWISE_RETURN(
+                                strcmp(parts[2], "visits") == 0,
+                                ErrorType::ErrorTypeBadRequest);
+
                         request_type_ = RequestType::GetVisitsByUserId;
                     }
 
@@ -126,51 +139,266 @@ bool HttpParser::Route(
 
                 case 'l':
                 {
+                    ENSURE_TRUE_OTHERWISE_RETURN(
+                                strcmp(parts[0], "locations") == 0,
+                                ErrorType::ErrorTypeBadRequest);
+
                     if (parts_amount == 2)         // /locations/<id>
                     {
-                        request_type_ = RequestType::GetUserById;
+                        request_type_ = RequestType::GetLocationById;
                     }
                     else                           // /locations/<id>/avg
                     {
+                        ENSURE_TRUE_OTHERWISE_RETURN(
+                                strcmp(parts[2], "avg") == 0,
+                                ErrorType::ErrorTypeBadRequest);
+
                         request_type_ = RequestType::GetAverageLocationMark;
                     }
                 } break;
 
                 case 'v':
                 {
+                    ENSURE_TRUE_OTHERWISE_RETURN(
+                            strcmp(parts[0], "visits") == 0,
+                            ErrorType::ErrorTypeBadRequest);
+
                     request_type_ = RequestType::GetVisitById;
                 } break;
 
                 default:
                 {
-                    return false;
+                    return ErrorType::ErrorTypeBadRequest;
                 }
             }
         } break;
 
         case HTTP_POST:
         {
-            // TODO
+            switch (parts[0][0])
+            {
+                case 'u':
+                {
+                    ENSURE_TRUE_OTHERWISE_RETURN(
+                            strcmp(parts[0], "users") == 0,
+                            ErrorType::ErrorTypeBadRequest);
+                    
+                    if (strcmp(parts[1], "new") == 0)
+                    {
+                        request_type_ = RequestType::AddUser;
+                    }
+                    else
+                    {
+                        const auto id =
+                                StringToNumber(parts[1]);
+                        ENSURE_TRUE_OTHERWISE_RETURN(
+                                id.first,
+                                ErrorType::ErrorTypeBadRequest);
+
+                        entity_id_ = id.second;
+                        request_type_ = RequestType::UpdateUserById;
+                    }
+                    
+                } break;
+
+                case 'l':
+                {
+                    ENSURE_TRUE_OTHERWISE_RETURN(
+                            strcmp(parts[0], "locations") == 0,
+                            ErrorType::ErrorTypeBadRequest);
+                    
+                    if (strcmp(parts[1], "new") == 0)
+                    {
+                        request_type_ = RequestType::AddLocation;
+                    }
+                    else
+                    {
+                        const auto id =
+                                StringToNumber(parts[1]);
+                        ENSURE_TRUE_OTHERWISE_RETURN(
+                                id.first,
+                                ErrorType::ErrorTypeBadRequest);
+
+                        entity_id_ = id.second;
+                        request_type_ = RequestType::UpdateLocationById;
+                    }
+                    
+                    
+                } break;
+
+                case 'v':
+                {
+                    ENSURE_TRUE_OTHERWISE_RETURN(
+                            strcmp(parts[0], "visits") == 0,
+                            ErrorType::ErrorTypeBadRequest);
+                    
+                    if (strcmp(parts[1], "new") == 0)
+                    {
+                        request_type_ = RequestType::UpdateVisitById;
+                    }
+                    else
+                    {
+                        const auto id =
+                                StringToNumber(parts[1]);
+                        ENSURE_TRUE_OTHERWISE_RETURN(
+                                id.first,
+                                ErrorType::ErrorTypeBadRequest);
+                        
+                        entity_id_ = id.second;
+                        request_type_ = RequestType::UpdateVisitById;
+                    }
+
+                    request_type_ = RequestType::AddVisit;
+                } break;
+
+                default:
+                {
+                    return ErrorType::ErrorTypeBadRequest;        
+                }
+            }
         } break;
 
         default:
         {
-            return false;
+            return ErrorType::ErrorTypeBadRequest;
         }
     }
+
+    return ErrorType::ErrorTypeOk;
 }
 
-bool HttpParser::ParseHttpRequest(
+HttpParser::ErrorType HttpParser::SplitQuery(
+        char* query)
+{
+    static const size_t max_query_parameters_amount = 5;
+    static struct yuarel_param query_parameters[max_query_parameters_amount];
+
+    const auto query_parameters_amount =
+            yuarel_parse_query(
+                query,
+                '&',
+                query_parameters,
+                max_query_parameters_amount);
+
+    // // Trace("\n\nNew query:");
+    // // Trace("query_parameters_amount = {}", query_parameters_amount);
+    // for (size_t i = 0; i < query_parameters_amount; ++i)
+    // {
+    //     // Trace("Parameter {}: key = {}, val = {}", i, query_parameters[i].key, query_parameters[i].val);
+    // }
+    
+    for (size_t i = 0; i < query_parameters_amount; ++i)
+    {
+        const auto key =
+                query_parameters[i].key;
+        const auto value =
+                query_parameters[i].val;
+
+        if (strcmp(key, "gender") == 0)
+        {
+            if (strcmp(value, "f") == 0)
+            {
+                gender_ = Gender::Female;
+            }
+            else if (strcmp(value, "m") == 0)
+            {
+                gender_ = Gender::Male;
+            }
+            else
+            {
+                return ErrorType::ErrorTypeBadRequest;
+            }
+
+            additional_info_mask_ |= static_cast<int>(HttpParserFlags::GenderFlag);
+        }
+        else if (strcmp(key, "toDistance") == 0)
+        {
+            const auto to_distance =
+                    StringToNumber(value);
+            
+            ENSURE_TRUE_OTHERWISE_RETURN(
+                    to_distance.first,
+                    ErrorType::ErrorTypeBadRequest);
+            
+            to_distance_ = to_distance.second;
+            additional_info_mask_ |= static_cast<int>(HttpParserFlags::ToDistanceFlag);
+        }
+        else if (strcmp(key, "fromDate") == 0)
+        {
+            const auto from_date =
+                    StringToNumber(value);
+            
+            ENSURE_TRUE_OTHERWISE_RETURN(
+                    from_date.first,
+                    ErrorType::ErrorTypeBadRequest);
+            
+            from_date_ = from_date.second;
+            additional_info_mask_ |= static_cast<int>(HttpParserFlags::FromDateFlag);
+        }
+        else if (strcmp(key, "toDate") == 0)
+        {
+            const auto to_date =
+                    StringToNumber(value);
+            
+            ENSURE_TRUE_OTHERWISE_RETURN(
+                    to_date.first,
+                    ErrorType::ErrorTypeBadRequest);
+            
+            to_date_ = to_date.second;
+            additional_info_mask_ |= static_cast<int>(HttpParserFlags::ToDateFlag);
+        }
+        else if (strcmp(key, "fromAge") == 0)
+        {
+            const auto from_age =
+                    StringToNumber(value);
+            
+            ENSURE_TRUE_OTHERWISE_RETURN(
+                    from_age.first,
+                    ErrorType::ErrorTypeBadRequest);
+            
+            from_age_ = from_age.second;
+            additional_info_mask_ |= static_cast<int>(HttpParserFlags::FromAgeFlag);
+        }
+        else if (strcmp(key, "toAge") == 0)
+        {
+            const auto to_age =
+                    StringToNumber(value);
+            
+            ENSURE_TRUE_OTHERWISE_RETURN(
+                    to_age.first,
+                    ErrorType::ErrorTypeBadRequest);
+            
+            to_age_ = to_age.second;
+            additional_info_mask_ |= static_cast<int>(HttpParserFlags::ToAgeFlag);
+        }
+        else if (strcmp(key, "country") == 0)
+        {
+            qs_decode(value);
+
+            country_ = value;
+            additional_info_mask_ |= static_cast<int>(HttpParserFlags::CountryFlag);
+        }
+    }
+
+    return ErrorType::ErrorTypeOk;
+}
+
+HttpParser::ErrorType HttpParser::ParseHttpRequest(
         /*const*/ char* request,
         const size_t readed)
 {
+    // std::string str(R"(\u0417\u0434\u0430\u043d\u0438\u0435)");
+    // qs_decode(const_cast<char*>(str.c_str()));
+    // Trace("STR STR STR STR STR STR STR = {}", str);
+
+    additional_info_mask_ = 0;
+
     char* request_local = request;
 
-    // HttpData http_data;
     if (request_local[0] == 'G')
     {
         char* url_start = request_local + 4;
-        http_data.url = url_start;
+        http_data_.url = url_start;
         char* it = url_start;
         int url_len = 0;
 
@@ -179,15 +407,21 @@ bool HttpParser::ParseHttpRequest(
           ++url_len;
         }
 
-        http_data.url_length = url_len;
-        http_data.method = HTTP_GET;
+        http_data_.url_length = url_len;
+        Trace("344");
+        Trace("344");
+        http_data_.method = HTTP_GET;
+
+        Trace(__FILENAME__, __LINE__, "Method = {}", parser_->method);
     }
     else
     {
+        // Trace("350");
+        // Trace("350");
         http_parser_init(
                 parser_.get(),
                 HTTP_REQUEST);
-        parser_->data = &http_data;
+        parser_->data = &http_data_;
         const int nparsed = http_parser_execute(
                 parser_.get(),
                 &settings,
@@ -196,37 +430,67 @@ bool HttpParser::ParseHttpRequest(
 
         if (nparsed != readed)
         {
-          std::cout << "nparsed = " << nparsed << std::endl;
-
+          DebugTrace("nparsed = {}", nparsed);
           // close(sock);
           // continue;
         }
 
-        std::cout << "parser_->http_errno = " <<
-                http_errno_description(HTTP_PARSER_ERRNO(parser_.get())) << std::endl;
+        entity_content_ =
+                std::string(
+                    http_data_.request.body,
+                    http_data_.request.body_length);
 
-        http_data.method = parser_->method;
+        // Trace(
+        //     "entity_id_ = {},\n entity_content_ = {}",
+        //     http_data_.request
+        //     entity_content_.c_str());
+
+        DebugTrace(
+                "parser_->http_errno = {}",
+                http_errno_description(HTTP_PARSER_ERRNO(parser_.get())));
+
+        http_data_.method = parser_->method;
+        // Trace(__FILENAME__, __LINE__, "Method = {}", parser_->method);
+
     }
 
-    std::cout << "Url start..." << std::endl;
+    current_request_type_ =
+            http_data_.method == HTTP_GET
+            ? HttpRequestType::HttpRequestTypeGet
+            : HttpRequestType::HttpRequestTypePost; 
+
+    DebugTrace("Url start...");
 
     static char max_path[120];
 
-    for (size_t i = 0; i < http_data.url_length; ++i)
+    // Not for debug trace!!!
+    
+    for (size_t i = 0; i < http_data_.url_length; ++i)
     {
-        max_path[i] = http_data.url[i];
-        std::cout << *(http_data.url + i);
+        max_path[i] = http_data_.url[i];
+    #ifdef DEBUG_LOG
+        std::cout << *(http_data_.url + i);
+    #endif
     }
-    max_path[http_data.url_length] = '\0';
-    std::cout << std::endl << "Url end..." << std::endl;
+
+    #ifdef DEBUG_LOG
+    std::cout << std::endl;
+    #endif
+
+    // Not for debug trace!!!
+
+    max_path[http_data_.url_length] = '\0';
+    DebugTrace("Url end...");
 
     struct yuarel url;
     if (yuarel_parse(&url, const_cast<char*>(max_path)) == -1)
     {
-        std::cout << "Error!!!" << std::endl;
+        DebugTrace("Error!!!");
     }
     else
     {
+// temp
+#ifdef DEBUG_LOG
         printf("Struct values:\n");
         printf("\tscheme:\t\t%s\n", url.scheme);
         printf("\thost:\t\t%s\n", url.host);
@@ -234,29 +498,54 @@ bool HttpParser::ParseHttpRequest(
         printf("\tpath:\t\t%s\n", url.path);
         printf("\tquery:\t\t%s\n", url.query);
         printf("\tfragment:\t%s\n", url.fragment);
+#endif
+// temp
 
         char* parts[MAX_PATH_SIZE];
         auto ret = yuarel_split_path(
                 url.path,
                 parts,
                 MAX_PATH_SIZE);
-        
-        std::cout << "ret = " << ret << std::endl;
+
+        DebugTrace("ret = {}", ret);
+
+        if (url.query)
+        {
+            const auto query_split_result =
+                    SplitQuery(url.query);
+
+            ENSURE_TRUE_OTHERWISE_RETURN(
+                    query_split_result == HttpParser::ErrorType::ErrorTypeOk,
+                    query_split_result);
+        }
         
         for (size_t i = 0; i < ret; ++i)
         {
-            std::cout << "part[" << i <<"] = " << parts[i] << std::endl;
+            DebugTrace("part[{}] = {}", i, parts[i]);
         }
       
-        const auto res = StringToNumber(parts[1]);
+        if (http_data_.request.body)
+        {
+            DebugTrace("http_data_.request.body");
+        }
+        else
+        {
+            DebugTrace("!http_data_.request.body");
+        }
 
-        std::cout << "Body = " << http_data.request.body << std::endl;
+        const auto route_result =
+                Route(parts, http_data_.method, ret);
+        
+        // Trace("route_result = = {}", static_cast<int>(route_result));
 
-        const bool route_result =
-                Route(parts, http_data.method, ret);
+        ENSURE_TRUE_OTHERWISE_RETURN(
+                route_result == ErrorType::ErrorTypeOk,
+                route_result);
+
+        DebugTrace("route_result = {}", route_result);
     }
 
-    return true;
+    return HttpParser::ErrorType::ErrorTypeOk;
 }
 
 void HttpParser::ParseHttpPostRequest(

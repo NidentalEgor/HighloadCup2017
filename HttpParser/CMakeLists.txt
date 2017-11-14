@@ -9,4 +9,4 @@ add_library(Http_Parser STATIC HttpParser.cpp HttpParser.h
 # http_parser.c
 )
 
-target_link_libraries(Http_Parser http_parser libyuarel)
+target_link_libraries(Http_Parser http_parser libyuarel qs_parse)

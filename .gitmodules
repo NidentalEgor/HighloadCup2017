@@ -10,3 +10,12 @@
 [submodule "Submodules/libyuarel"]
 	path = Submodules/libyuarel
 	url = https://github.com/jacketizer/libyuarel.git
+[submodule "Submodules/zipper"]
+	path = Submodules/zipper
+	url = https://github.com/sebastiandev/zipper
+[submodule "Submodules/fmt"]
+	path = Submodules/fmt
+	url = https://github.com/fmtlib/fmt.git
+[submodule "Submodules/qs_parse"]
+	path = Submodules/qs_parse
+	url = https://github.com/bartgrantham/qs_parse.git

@@ -4,7 +4,6 @@
 
 #include <string>
 
-// using Timestamp = long long;
 using Timestamp = long int;
 
 enum class Gender

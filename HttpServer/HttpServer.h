@@ -16,11 +16,60 @@
 #include "../Utils/Traceable.h"
 #include "../DataStorage/DataStorage.h"
 
+//
+#include "../Submodules/rapidjson/include/rapidjson/writer.h"
+#include "../Submodules/rapidjson/include/rapidjson/stringbuffer.h"
+//
+
 namespace Network
 {
 
 namespace Private
 {
+    enum class RequestProcessingStatus
+    {
+        Ok = 200, // 200
+        NotFound = 404, // 404
+        BadRequest = 400 // 400
+    };
+
+    using RequestProcessingResult =
+            std::pair<RequestProcessingStatus, std::unique_ptr<std::string>>;
+
+    static const std::string not_found_post_response(
+            "HTTP/1.1 404 Not Found\r\n"
+            "S: b\r\n"
+            "C: k\r\n"
+            "B: a\r\n"
+            "Content-Length: 0\r\n"
+            "\r\n");
+
+    static const std::string bad_data_response(
+            "HTTP/1.1 400 Bad Request\r\n"
+            "S: b\r\n"
+            "C: k\r\n"
+            "B: a\r\n"
+            "Content-Length: 0\r\n"
+            "\r\n");
+    
+    static const std::string get_entity_by_id_response(
+            "HTTP/1.1 200 OK\r\n"
+            "S: b\r\n"
+            "C: k\r\n"
+            "B: a\r\n"
+            "Content-Length: {}\r\n"
+            "\r\n"
+            "{}");
+
+    // Not used yet.
+    static const std::string ok(
+            "HTTP/1.1 200 OK\r\n"
+            "S: b\r\n"
+            "C: k\r\n"
+            "B: a\r\n"
+            "Content-Length: 2\r\n"
+            "\r\n"
+            "{}");
 
 class Connection
     : private boost::noncopyable
@@ -60,7 +109,7 @@ public:
 
     void FillAverageLocationMarkQuery(
             const HttpParser& http_parser,
-            DataStorage::GetAverageLocationMarkQuery query)
+            DataStorage::GetAverageLocationMarkQuery& query)
     {
         const int mask =
                 http_parser.GetAdditionalInfoMask();
@@ -93,7 +142,7 @@ public:
 
     void FillVisistsByUserIdQuery(
             const HttpParser& http_parser,
-            DataStorage::GetVisistsByUserIdQuery query)
+            DataStorage::GetVisistsByUserIdQuery& query)
     {
         const int mask =
                 http_parser.GetAdditionalInfoMask();
@@ -119,52 +168,128 @@ public:
         }
     }
 
-    std::unique_ptr<std::string> ProcessRequest(
+    RequestProcessingResult ProcessRequest(
             const char* message,
             const size_t message_size)
     {
         HttpParser http_parser;
-        ENSURE_TRUE_OTHERWISE_RETURN(
+        // ENSURE_TRUE_OTHERWISE_RETURN(
+        //         http_parser.ParseHttpRequest(
+        //             const_cast<char*>(message),
+        //             message_size),
+        //         std::make_pair(
+        //             RequestProcessingStatus::BadRequest,
+        //             nullptr));
+
+        // Trace("179");
+        // Trace("179");
+        // TraceCharacters(
+        //         const_cast<char*>(message),
+        //         message_size);
+
+        const auto parse_http_request_result =
                 http_parser.ParseHttpRequest(
                     const_cast<char*>(message),
-                    message_size),
-                nullptr);
+                    message_size);
+        
+        // Trace("parse_http_request_result = {}", static_cast<int>(parse_http_request_result));
 
+        if (parse_http_request_result == HttpParser::ErrorType::ErrorTypeNotFound)
+        {
+            return std::make_pair(RequestProcessingStatus::NotFound, nullptr);
+        }
+        else
+        if(parse_http_request_result == HttpParser::ErrorType::ErrorTypeBadRequest)
+        {
+            return std::make_pair(RequestProcessingStatus::BadRequest, nullptr);
+        }
+
+        DebugTrace("Before switch");
         std::unique_ptr<std::string> result;
+
+        std::string result_str;
+
+        // Trace("GetRequestType = {}", static_cast<int>(http_parser.GetRequestType()));
+
         switch (http_parser.GetRequestType())
         {
             case HttpParser::RequestType::GetUserById:
             {
                 result =
                     data_storage_->GetUserById(http_parser.GetEntityId());
+
+                ENSURE_TRUE_OTHERWISE_RETURN(
+                        result,
+                        std::make_pair(
+                            RequestProcessingStatus::NotFound,
+                            nullptr));
+
+                result_str =
+                        fmt::format(
+                            get_entity_by_id_response,
+                            result->size(),
+                            *result);
             } break;
 
             case HttpParser::RequestType::GetVisitById:
             {
                 result =
                     data_storage_->GetVisitById(http_parser.GetEntityId());
+
+                ENSURE_TRUE_OTHERWISE_RETURN(
+                        result,
+                        std::make_pair(
+                            RequestProcessingStatus::NotFound,
+                            nullptr));
+                
+                result_str =
+                        fmt::format(
+                            get_entity_by_id_response,
+                            result->size(),
+                            *result);
             } break;
 
             case HttpParser::RequestType::GetLocationById:
             {
                 result =
                     data_storage_->GetLocationById(http_parser.GetEntityId());
+
+                ENSURE_TRUE_OTHERWISE_RETURN(
+                        result,
+                        std::make_pair(
+                            RequestProcessingStatus::NotFound,
+                            nullptr));
+
+                result_str =
+                        fmt::format(
+                            get_entity_by_id_response,
+                            result->size(),
+                            *result);
             } break;
 
             case HttpParser::RequestType::GetAverageLocationMark:
             {
                 DataStorage::GetAverageLocationMarkQuery query(
                         http_parser.GetEntityId());
-                
-                const auto mask =
-                        http_parser.GetAdditionalInfoMask();
 
                 FillAverageLocationMarkQuery(
                         http_parser,
                         query);
-                
+
                 result =
                     data_storage_->GetAverageLocationMark(query);
+                
+                ENSURE_TRUE_OTHERWISE_RETURN(
+                        result,
+                        std::make_pair(
+                            RequestProcessingStatus::NotFound,
+                            nullptr));
+
+                result_str =
+                        fmt::format(
+                            get_entity_by_id_response,
+                            result->size(),
+                            *result);
             } break;
 
             case HttpParser::RequestType::GetVisitsByUserId:
@@ -178,15 +303,100 @@ public:
 
                 result =
                     data_storage_->GetVisistsByUserId(query);
+
+                ENSURE_TRUE_OTHERWISE_RETURN(
+                        result,
+                        std::make_pair(
+                            RequestProcessingStatus::NotFound,
+                            nullptr));
+                
+                // Trace("result = {}", *result);
+
+                result_str =
+                        fmt::format(
+                            get_entity_by_id_response,
+                            result->size(),
+                            *result);
+                
+                // Trace("316 316 316 316 316 316 316 316 316 316 result_str = {}", result_str);
+            } break;
+
+            case HttpParser::RequestType::UpdateUserById:
+            {
+
+            } break;
+
+            case HttpParser::RequestType::UpdateVisitById:
+            {
+                
+            } break;
+
+            case HttpParser::RequestType::UpdateLocationById:
+            {
+
+            } break;
+
+            case HttpParser::RequestType::AddUser:
+            {
+                // const auto id =
+                //         http_parser.GetEntityId();
+                
+                // const auto data =
+                //         http_parser.GetBodyContent();
+                // Trace(__FILENAME__, __LINE__, "body = {}", data);
+
+                // rapidjson::Document d;
+                // d.Parse(data);
+                // // User user(d);
+                // // Value& s = d[""];
+
+                // rapidjson::StringBuffer buffer;
+                // rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
+                // d.Accept(writer);
+
+                // // Output {"project":"rapidjson","stars":11}
+                // Trace("SEE SEE SEE SEE SEE SEE SEE SEE SEE SEE ");
+                // std::cout << buffer.GetString() << std::endl;
+
+            } break;
+
+            case HttpParser::RequestType::AddVisit:
+            {
+                const auto id =
+                        http_parser.GetEntityId();
+                
+                const auto data =
+                        http_parser.GetBodyContent();
+
+                Visit visit;
+                const auto validate_result = visit.Validate(data);
+                
+                Trace(__FILENAME__, __LINE__, "data = {}", data);
+                Trace(__FILENAME__, __LINE__, "validate_result = {}\n\n", validate_result);
+            } break;
+
+            case HttpParser::RequestType::AddLocation:
+            {
+                const auto id =
+                        http_parser.GetEntityId();
+                
+                const auto data =
+                        http_parser.GetBodyContent();
+                // Trace(__FILENAME__, __LINE__, "body = {}", data);
+
+
             } break;
 
             default:
             {
-                return nullptr;
+                // return nullptr;
             }
         }
 
-        return result;
+        DebugTrace("Before common return");
+        return std::make_pair(
+                RequestProcessingStatus::Ok,
+                std::make_unique<std::string>(result_str));
     }
 
     void HandleRead(
@@ -198,21 +408,38 @@ public:
             return;
         } 
 
-        ///
-        std::cout << "buffer_.data() = " << buffer_.data() << std::endl << std::endl;
-        ///
+        DebugTrace("\n");
+        DebugTraceCharacters("buffer_.data() = {}", message_size);
 
-        Trace("Request parsing begin...");
-        const auto answer =
+        DebugTrace("Request parsing begin.....");
+        RequestProcessingResult process_request_result =
                 ProcessRequest(buffer_.data(), message_size);
-        Trace("Request parsing end...");
+        DebugTrace("Request parsing end...");
   
-        if (!answer)
+        std::unique_ptr<std::string> answer = nullptr; 
+
+        DebugTrace("Before process_request_result.first 2 ");
+        if (process_request_result.first == RequestProcessingStatus::BadRequest)
         {
-            return;
+            DebugTrace("RequestProcessingStatus:BadRequest");
+            answer = std::make_unique<std::string>(bad_data_response);
+        }
+        else if (process_request_result.first == RequestProcessingStatus::NotFound)
+        {
+            DebugTrace("RequestProcessingStatus:NotFound");
+            answer = std::make_unique<std::string>(not_found_post_response);
+        }
+        else if (process_request_result.first == RequestProcessingStatus::Ok)
+        {
+            DebugTrace("RequestProcessingStatus::Ok");
+            answer = std::move(process_request_result.second);
+        }
+        else
+        {
+            answer = std::make_unique<std::string>("Default answer");
         }
 
-        std::cout << "Answer = " << *answer << std::endl;
+        DebugTrace("Answer = {}", *answer);
 
         std::vector<boost::asio::const_buffer> buffers;
         buffers.push_back(
@@ -235,6 +462,7 @@ public:
     {
         if (error)
         {
+            // Trace("Error Error Error Error Error Error Error Error Error Error Error Error Error ");
             return;
         }
 
@@ -272,15 +500,16 @@ public:
 
         data_storage_ = boost::make_shared<DataStorage>();
         data_storage_->LoadData("/home/egor/Repositories/hlcupdocs/data/TRAIN/data/");
+        // data_storage_->LoadData("/home/egor/Repositories/hlcupdocs/data/FULL/data/");
 
         Trace("Data storage is ready...");
 
         boost::asio::ip::tcp::resolver resolver(io_service_);
         boost::asio::ip::tcp::resolver::query query(locAddr, port);
-        boost::asio::ip::tcp::endpoint Endpoint = *resolver.resolve(query);
-        acceptor_.open(Endpoint.protocol());
+        boost::asio::ip::tcp::endpoint endpoint = *resolver.resolve(query);
+        acceptor_.open(endpoint.protocol());
         acceptor_.set_option(boost::asio::ip::tcp::acceptor::reuse_address(true));
-        acceptor_.bind(Endpoint);
+        acceptor_.bind(endpoint);
         acceptor_.listen();
         
         StartAccept();

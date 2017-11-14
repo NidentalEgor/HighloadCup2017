@@ -2,6 +2,8 @@
 #include <iostream>
 #include <sstream>
 #include <iomanip>
+#include <stdio.h>
+#include <stdlib.h>
 
 #include "Macroses.h"
 #include "DataStorage.h"
@@ -254,8 +256,20 @@ std::unique_ptr<std::string> DataStorage::GetVisistsByUserId(
     std::string result(R"({"visits":[)");
     for (const auto visit_description : visits)
     {
-        result += *visits_.find(visit_description.second)->second.Serialize();
-        result += ',';
+        // result += *visits_.find(visit_description.second)->second.Serialize();
+        const auto visit = visits_.find(visit_description.second)->second;
+        const auto location = locations_.find(visit.location_id_);
+
+        ENSURE_TRUE_OTHERWISE_CONTINUE(
+                location != locations_.end());
+        
+        result += R"({"mark:")";
+        result += std::to_string(visit.mark_);
+        result += R"(,"visited_at":)";
+        result += std::to_string(visit.visited_at_);
+        result += R"(,"place":")";
+        result += location->second.place_;
+        result += R"("},)";
     }
 
     if (!visits.empty())
@@ -554,7 +568,7 @@ DataStorage::UpdateEntityStatus DataStorage::UpdateVisit(
     }
     else
     {
-        std::cout << "if not (user != users_.end())" << std::endl;
+        // DebugTrace("if not (user != users_.end())");
     }
     
     return UpdateEntity<Visit>(visit, visits_);

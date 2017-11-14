@@ -12,6 +12,7 @@
 #include "Entities/User.h"
 #include "Entities/Visit.h"
 #include "Entities/DataTypes.h"
+#include "../Utils/Traceable.h"
 
 class DataStorage
 {
