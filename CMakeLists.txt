@@ -41,6 +41,6 @@ add_subdirectory(Utils)
 TARGET_LINK_LIBRARIES(Server
   data_storage
   Http_Parser
-  DataExtracter
+  # DataExtracter
   Traceable
   ${BOOST_LIBS})
