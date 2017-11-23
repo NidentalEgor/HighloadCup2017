@@ -32,7 +32,7 @@ add_definitions(-DRAPIDJSON_HAS_CXX11_RVALUE_REFS)
 # add_definitions(-DRAPIDJSON_HAS_STDSTRING)
 set(RAPIDJSON_BUILD_TESTS OFF CACHE INTERNAL "" FORCE) # Due to -Werror in rapidjson tests.
 add_subdirectory(rapidjson)
-# add_subdirectory(zipper)
+add_subdirectory(zipper)
 add_subdirectory(fmt)
 
 add_library(http_parser http-parser/http_parser.c)

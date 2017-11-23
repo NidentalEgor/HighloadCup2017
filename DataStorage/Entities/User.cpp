@@ -1,5 +1,7 @@
 #include <sstream>
 
+#include "../Utils/Macroses.h"
+
 #include "User.h"
 
 User::User()
@@ -7,8 +9,8 @@ User::User()
     , email()
     , first_name()
     , last_name()
-    , gender()
-    , birth_date(0)
+    , gender(Gender::Any)
+    , birth_date(std::numeric_limits<Timestamp>::min())
 {
 }
 
@@ -56,4 +58,45 @@ std::unique_ptr<std::string> User::Serialize() const
             "\",\"birth_date\":" << birth_date << '}';
 
     return std::make_unique<std::string>(str.str());
+}
+
+bool User::Validate(
+        const char* content) const
+{
+    rapidjson::Document json_content;;
+    ENSURE_TRUE_OTHERWISE_RETURN(
+            !json_content.Parse(content).HasParseError(),
+            false);
+
+    ENSURE_TRUE_OTHERWISE_RETURN(
+            json_content.HasMember("id") &&
+                json_content["id"].IsUint64(),
+            false);
+
+    ENSURE_TRUE_OTHERWISE_RETURN(
+            json_content.HasMember("email") &&
+                json_content["email"].IsString(),
+            false);
+    
+    ENSURE_TRUE_OTHERWISE_RETURN(
+            json_content.HasMember("first_name") &&
+                json_content["first_name"].IsString(),
+            false);
+            
+    ENSURE_TRUE_OTHERWISE_RETURN(
+            json_content.HasMember("last_name") &&
+                json_content["last_name"].IsString(),
+            false);
+
+    ENSURE_TRUE_OTHERWISE_RETURN(
+            json_content.HasMember("gender") &&
+                json_content["gender"].IsString(),
+            false);
+
+    ENSURE_TRUE_OTHERWISE_RETURN(
+            json_content.HasMember("birth_date") &&
+                json_content["birth_date"].IsInt64(),
+            false);
+
+    return true;
 }

@@ -6,14 +6,14 @@ class IValidateable
 {
 public:
     virtual bool Validate(
-            const std::string& content) final
+            const std::string& content) const final
     {
         return Validate(content.c_str());
     }
 
 
     virtual bool Validate(
-            const char* content) = 0;
+            const char* content) const = 0;
 };
 
 #endif // I_VALIDATEABLE_H_INCLUDED

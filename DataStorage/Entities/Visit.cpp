@@ -4,10 +4,6 @@
 
 #include "Visit.h"
 
-//
-#include <iostream>
-//
-
 Visit::Visit(
         const uint32_t id,
         const uint32_t location_id,
@@ -24,10 +20,10 @@ Visit::Visit(
 
 Visit::Visit()
     : Identifiable(0)
-    , location_id_(0)
-    , user_id_(0)
-    , visited_at_(0)
-    , mark_(0)
+    , location_id_(std::numeric_limits<uint32_t>::max())
+    , user_id_(std::numeric_limits<uint32_t>::max())
+    , visited_at_(std::numeric_limits<Timestamp>::max())
+    , mark_(std::numeric_limits<Mark>::max())
 {
 }
 
@@ -76,44 +72,36 @@ std::unique_ptr<std::string> Visit::Serialize() const
 }
 
 bool Visit::Validate(
-            const char* content)
+            const char* content) const
 {
-    std::cout << "content = " << content << std::endl;
-
     rapidjson::Document json_content;;
-
     ENSURE_TRUE_OTHERWISE_RETURN(
             !json_content.Parse(content).HasParseError(),
             false);
 
-    // assert(document.IsObject()
+    ENSURE_TRUE_OTHERWISE_RETURN(
+            json_content.HasMember("id") &&
+                json_content["id"].IsUint(),
+            false);
 
-    std::cout << "location" << std::endl;
-    //Trace("location");
     ENSURE_TRUE_OTHERWISE_RETURN(
             json_content.HasMember("location") &&
                 json_content["location"].IsUint(),
             false);
 
-    std::cout << "user" << std::endl;
-    //Trace("user");
     ENSURE_TRUE_OTHERWISE_RETURN(
             json_content.HasMember("user") &&
                 json_content["user"].IsUint(),
             false);
-
-    std::cout << "visited_at" << std::endl;
-    //Trace("visited_at");
+    
     ENSURE_TRUE_OTHERWISE_RETURN(
             json_content.HasMember("visited_at") &&
                 json_content["visited_at"].IsInt64(),
             false);
 
-    std::cout << "mark" << std::endl;
-    //Trace("mark\n");
     ENSURE_TRUE_OTHERWISE_RETURN(
             json_content.HasMember("mark") &&
-                json_content["visited_at"].IsUint64(),
+                json_content["mark"].IsUint64(),
             false);
 
     return true;

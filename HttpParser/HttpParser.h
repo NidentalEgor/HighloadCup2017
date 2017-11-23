@@ -29,17 +29,17 @@ public:
     enum class RequestType
     {
         None = 0,
-        GetVisitById,
-        GetUserById,
-        GetLocationById,
-        GetVisitsByUserId,
-        GetAverageLocationMark,
-        UpdateVisitById,
-        UpdateUserById,
-        UpdateLocationById,
-        AddVisit,
-        AddUser,
-        AddLocation
+        GetVisitById = 1,
+        GetUserById = 2,
+        GetLocationById = 3,
+        GetVisitsByUserId = 4,
+        GetAverageLocationMark = 5,
+        UpdateVisitById = 6,
+        UpdateUserById = 7,
+        UpdateLocationById = 8,
+        AddVisit = 9,
+        AddUser = 10,
+        AddLocation = 11
     };
 
     enum class ErrorType

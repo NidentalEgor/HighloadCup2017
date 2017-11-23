@@ -9,17 +9,32 @@ int main(int argc, char* argv[])
 {
     try
     {
-        DataExtracter data_extracter;
-        data_extracter.ExtractData(
-                "/tmp/data/data.zip",
-                "/tmp/data");
         // For docker
-        // Network::EchoServer Srv("0.0.0.0", "80", 4);
+        // Network::EchoServer Srv("0.0.0.0", "80", 1);
         // For docker
 
+        // Local network test
         // Network::EchoServer Srv("192.168.2.103", "5555", 4);
-        Network::EchoServer Srv("127.0.0.1", "5555", 4);
+        // Local network test
+
+
         
+        // Testing
+        // data_storage_->LoadZippedData("/tmp/data/data.zip");
+        // data_storage_->LoadZippedData("/HighloadCup2017/data.zip");
+        // data_storage_->LoadZippedData("/home/egor/Repositories/highload_data_zip/data.zip");
+        // data_storage_->LoadData("/home/egor/Repositories/hlcupdocs/data/TRAIN/data/");
+        // data_storage_->LoadData("/home/egor/Repositories/hlcupdocs/data/FULL/data/");
+
+        Network::EchoServer server(
+                "127.0.0.1",
+                "5555",
+                Network::LoadedDataType::Unzipped,
+                // "/home/egor/Repositories/highload_data_zip/data.zip",
+                "/home/egor/Repositories/hlcupdocs/data/FULL/data/",
+                4);
+        // Testing
+
         std::cin.get();
     }
     catch (std::exception const &e)
@@ -27,38 +42,149 @@ int main(int argc, char* argv[])
         std::cout << "catch (std::exception const &e)" << std::endl;
         std::cerr << e.what() << std::endl;
     }
+
     return 0;
 }
 
 // int main(int argc, char* argv[])
 // {
-    // std::string request =
-    //         R"(GET /locations/3558 HTTP/1.1
-    //             Host: travels.com
-    //             User-Agent: Technolab/1.0 (Docker; CentOS) Highload/1.0
-    //             Accept: */*
-    //             Connection: keep-alive)";
+//   try
+//   {
+//     if (argc != 2)
+//     {
+//       std::cerr << "Usage: async_tcp_echo_server <port>\n";
+//       return 1;
+//     }
 
-    // std::string request =
-    //         R"(POST /users/8230?query_id=0 HTTP/1.1 Host: travels.com User-Agent: Technolab/1.0 (Docker; CentOS) Highload/1.0 Accept: */* Connection: close Content-Length: 84 Content-Type: application/json {"birth_date": 47779200, "first_name": "\u0410\u0440\u043a\u0430\u0434\u0438\u0439"})";
+//     boost::asio::io_service io_service;
 
-    // std::string request = R"(POST /users/new?query_id=13787 HTTP/1.1
-    //     Host: travels.com
-    //     User-Agent: Technolab/1.0 (Docker; CentOS) Highload/1.0
-    //     Accept: */*
-    //     Connection: close
-    //     Content-Length: 212
-    //     Content-Type: application/json
-        
-    //     {"first_name": "\u041a\u0438\u0440\u0438\u043b\u043b", "last_name": "\u041b\u0435\u0431\u044b\u043a\u0430\u0432\u0435\u043d", "gender": "m", "id": 10058, "birth_date": -478569600, "email": "ohrisnaunhos@list.me"}
-    //     )";
+//     server s(io_service, std::atoi(argv[1]));
 
-    // std::string request = R"(POST /users/new?query_id=13787 HTTP/1.1 Host: travels.com)";
+//     io_service.run();
+//   }
+//   catch (std::exception& e)
+//   {
+//     std::cerr << "Exception: " << e.what() << "\n";
+//   }
 
-    // HttpParser http_parser;
-    // http_parser.ParseHttpRequest(
-    //         const_cast<char*>(request.c_str()),
-    //         request.size());
+//   return 0;
+// }
 
-    // return 0;
+//
+// async_tcp_echo_server.cpp
+// ~~~~~~~~~~~~~~~~~~~~~~~~~
+//
+// Copyright (c) 2003-2013 Christopher M. Kohlhoff (chris at kohlhoff dot com)
+//
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+//
+
+// #include <cstdlib>
+// #include <iostream>
+// #include <memory>
+// #include <utility>
+// #include <boost/asio.hpp>
+
+// using boost::asio::ip::tcp;
+
+// class session
+//   : public std::enable_shared_from_this<session>
+// {
+// public:
+//   session(tcp::socket socket)
+//     : socket_(std::move(socket))
+//   {
+//   }
+
+//   void start()
+//   {
+//     do_read();
+//   }
+
+// private:
+//   void do_read()
+//   {
+//     auto self(shared_from_this());
+//     socket_.async_read_some(boost::asio::buffer(data_, max_length),
+//         [this, self](boost::system::error_code ec, std::size_t length)
+//         {
+//           if (!ec)
+//           {
+//             do_write(length);
+//           }
+//         });
+//   }
+
+//   void do_write(std::size_t length)
+//   {
+//     auto self(shared_from_this());
+
+//     std::string mes("Hello from server!!!!");
+//     boost::asio::async_write(socket_, boost::asio::buffer(mes, mes.size()),
+//         [this, self](boost::system::error_code ec, std::size_t /*length*/)
+//         {
+//           if (!ec)
+//           {
+//             do_read();
+//           }
+//         });
+//   }
+
+//   tcp::socket socket_;
+//   enum { max_length = 1024 };
+//   char data_[max_length];
+// };
+
+// class server
+// {
+// public:
+//   server(boost::asio::io_service& io_service, short port)
+//     : acceptor_(io_service, tcp::endpoint(tcp::v4(), port)),
+//       socket_(io_service)
+//   {
+//     do_accept();
+//   }
+
+// private:
+//   void do_accept()
+//   {
+//     acceptor_.async_accept(socket_,
+//         [this](boost::system::error_code ec)
+//         {
+//           if (!ec)
+//           {
+//             std::make_shared<session>(std::move(socket_))->start();
+//           }
+
+//           do_accept();
+//         });
+//   }
+
+//   tcp::acceptor acceptor_;
+//   tcp::socket socket_;
+// };
+
+// int main(int argc, char* argv[])
+// {
+//   try
+//   {
+//     if (argc != 2)
+//     {
+//       std::cerr << "Usage: async_tcp_echo_server <port>\n";
+//       return 1;
+//     }
+
+//     boost::asio::io_service io_service;
+
+//     server s(io_service, std::atoi(argv[1]));
+
+//     io_service.run();
+//   }
+//   catch (std::exception& e)
+//   {
+//     std::cerr << "Exception: " << e.what() << "\n";
+//   }
+
+//   return 0;
 // }

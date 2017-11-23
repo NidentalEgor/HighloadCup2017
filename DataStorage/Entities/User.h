@@ -10,12 +10,14 @@
 #include "DataTypes.h"
 #include "ISerializable.h"
 #include "IDeserializable.h"
+#include "IValidateable.h"
 #include "Visit.h"
 
 struct User
     : public Identifiable
     , public IDeserializable
     , public ISerializable
+    , public IValidateable
 {
 public:
     User();
@@ -32,6 +34,9 @@ public:
             const rapidjson::Value& user_element) override final;
 
     std::unique_ptr<std::string> Serialize() const override final;
+
+    virtual bool Validate(
+            const char* content) const override;
     
 public:
     std::string email;

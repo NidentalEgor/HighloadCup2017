@@ -14,7 +14,8 @@
 #include "Entities/DataTypes.h"
 #include "../Utils/Traceable.h"
 
-class DataStorage
+class DataStorage final
+        : public Traceable
 {
 public:
     template <typename T>
@@ -74,6 +75,9 @@ public:
     void LoadData(
             const std::string& folder_path);
     
+    void LoadZippedData(
+            const std::string& path_to_zipped_data);
+
     size_t GetLocationsAmount()
     {
         return locations_.size();
@@ -127,6 +131,15 @@ public:
     ///
 
 private:
+    void InitializeUsers(
+            const std::string& path_to_zipped_data);
+
+    void InitializeLocations(
+            const std::string& path_to_zipped_data);
+
+    void InitializeVisits(
+            const std::string& path_to_zipped_data);
+
     void MapEntities();
 
     Timestamp GetBoundaryBirthDate(

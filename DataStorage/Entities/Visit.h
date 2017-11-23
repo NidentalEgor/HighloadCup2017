@@ -34,7 +34,7 @@ public:
     std::unique_ptr<std::string> Serialize() const override final;
 
     bool Validate(
-            const char* content) override;
+            const char* content) const override;
 
     // Visit(const rapidjson::Value& visit_element);
 

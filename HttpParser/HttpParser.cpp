@@ -14,9 +14,6 @@ int HttpParser::OnUrl(
         const char* position,
         size_t length)
 {
-    // Trace(__FILENAME__, __LINE__, "OnUrl");
-    // TraceCharacters(position, length);
-
     HttpData* http_data =
             reinterpret_cast<HttpData*>(parser->data);
 
@@ -31,9 +28,6 @@ int HttpParser::OnBody(
         const char* position,
         size_t length)
 {
-    // Trace(__FILENAME__, __LINE__, "OnBody");
-    // TraceCharacters(position, length);
-
     HttpData* http_data =
             reinterpret_cast<HttpData*>(parser->data);
 
@@ -86,14 +80,13 @@ HttpParser::ErrorType HttpParser::Route(
         const size_t parts_amount)
 {
     DebugTrace("HttpParser::Route");
-    Trace(__FILENAME__, __LINE__, "parts_amount = {}", parts_amount);
+    //
+    request_type_ = RequestType::None;
+    //
+
     // ENSURE_TRUE_OTHERWISE_RETURN(
     //         (parts_amount == 3 || parts_amount == 2),
     //         ErrorType::ErrorTypeBadRequest);
-    // Trace("109");
-    // Trace("109");
-    // Trace("109");
-    // Trace("method = {}", static_cast<int>(method));
     switch (method)
     {
         case HTTP_GET:
@@ -102,10 +95,6 @@ HttpParser::ErrorType HttpParser::Route(
 
             const auto id =
                     StringToNumber(parts[1]);
-
-            // Trace("119");
-            // Trace("119");
-            // Trace("119");
 
             ENSURE_TRUE_OTHERWISE_RETURN(
                     id.first,
@@ -127,7 +116,6 @@ HttpParser::ErrorType HttpParser::Route(
                     }
                     else                           // /users/<id>/visits
                     {
-                        // Trace("139");
                         ENSURE_TRUE_OTHERWISE_RETURN(
                                 strcmp(parts[2], "visits") == 0,
                                 ErrorType::ErrorTypeBadRequest);
@@ -175,20 +163,29 @@ HttpParser::ErrorType HttpParser::Route(
 
         case HTTP_POST:
         {
+            for (size_t i = 0; i < parts_amount; ++i)
+            {
+                DebugTrace(__FILENAME__, __LINE__, "part[{}] = {}", i, parts[i]);
+            }
+
             switch (parts[0][0])
             {
                 case 'u':
                 {
+                    DebugTrace(__FILENAME__, __LINE__, "case 'u':");
+
                     ENSURE_TRUE_OTHERWISE_RETURN(
                             strcmp(parts[0], "users") == 0,
                             ErrorType::ErrorTypeBadRequest);
-                    
+
                     if (strcmp(parts[1], "new") == 0)
                     {
+                        DebugTrace(__FILENAME__, __LINE__, R"(if (strcmp(parts[1], "new") == 0))");
                         request_type_ = RequestType::AddUser;
                     }
                     else
                     {
+                        DebugTrace(__FILENAME__, __LINE__, R"(NOT if (strcmp(parts[1], "new") == 0))");
                         const auto id =
                                 StringToNumber(parts[1]);
                         ENSURE_TRUE_OTHERWISE_RETURN(
@@ -203,16 +200,29 @@ HttpParser::ErrorType HttpParser::Route(
 
                 case 'l':
                 {
+                    DebugTrace(__FILENAME__, __LINE__, "case 'l':");
+
                     ENSURE_TRUE_OTHERWISE_RETURN(
                             strcmp(parts[0], "locations") == 0,
                             ErrorType::ErrorTypeBadRequest);
                     
                     if (strcmp(parts[1], "new") == 0)
                     {
+                        DebugTrace(__FILENAME__, __LINE__, R"(if (strcmp(parts[1], "new") == 0))");
                         request_type_ = RequestType::AddLocation;
                     }
                     else
                     {
+                        DebugTrace(__FILENAME__, __LINE__, R"(NOT if (strcmp(parts[1], "new") == 0))");
+                        if (parts[1])
+                        {
+                            DebugTrace(__FILENAME__, __LINE__, R"(parts[1] = {})", parts[1]);
+                        }
+                        else
+                        {
+                            DebugTrace(__FILENAME__, __LINE__, R"(parts!!!11)");
+                        }
+                        
                         const auto id =
                                 StringToNumber(parts[1]);
                         ENSURE_TRUE_OTHERWISE_RETURN(
@@ -234,7 +244,7 @@ HttpParser::ErrorType HttpParser::Route(
                     
                     if (strcmp(parts[1], "new") == 0)
                     {
-                        request_type_ = RequestType::UpdateVisitById;
+                        request_type_ = RequestType::AddVisit;
                     }
                     else
                     {
@@ -247,8 +257,6 @@ HttpParser::ErrorType HttpParser::Route(
                         entity_id_ = id.second;
                         request_type_ = RequestType::UpdateVisitById;
                     }
-
-                    request_type_ = RequestType::AddVisit;
                 } break;
 
                 default:
@@ -280,13 +288,6 @@ HttpParser::ErrorType HttpParser::SplitQuery(
                 query_parameters,
                 max_query_parameters_amount);
 
-    // // Trace("\n\nNew query:");
-    // // Trace("query_parameters_amount = {}", query_parameters_amount);
-    // for (size_t i = 0; i < query_parameters_amount; ++i)
-    // {
-    //     // Trace("Parameter {}: key = {}, val = {}", i, query_parameters[i].key, query_parameters[i].val);
-    // }
-    
     for (size_t i = 0; i < query_parameters_amount; ++i)
     {
         const auto key =
@@ -387,10 +388,6 @@ HttpParser::ErrorType HttpParser::ParseHttpRequest(
         /*const*/ char* request,
         const size_t readed)
 {
-    // std::string str(R"(\u0417\u0434\u0430\u043d\u0438\u0435)");
-    // qs_decode(const_cast<char*>(str.c_str()));
-    // Trace("STR STR STR STR STR STR STR = {}", str);
-
     additional_info_mask_ = 0;
 
     char* request_local = request;
@@ -408,16 +405,12 @@ HttpParser::ErrorType HttpParser::ParseHttpRequest(
         }
 
         http_data_.url_length = url_len;
-        Trace("344");
-        Trace("344");
         http_data_.method = HTTP_GET;
 
-        Trace(__FILENAME__, __LINE__, "Method = {}", parser_->method);
+        DebugTrace(__FILENAME__, __LINE__, "Method = {}", parser_->method);
     }
     else
     {
-        // Trace("350");
-        // Trace("350");
         http_parser_init(
                 parser_.get(),
                 HTTP_REQUEST);
@@ -440,17 +433,11 @@ HttpParser::ErrorType HttpParser::ParseHttpRequest(
                     http_data_.request.body,
                     http_data_.request.body_length);
 
-        // Trace(
-        //     "entity_id_ = {},\n entity_content_ = {}",
-        //     http_data_.request
-        //     entity_content_.c_str());
-
         DebugTrace(
                 "parser_->http_errno = {}",
                 http_errno_description(HTTP_PARSER_ERRNO(parser_.get())));
 
         http_data_.method = parser_->method;
-        // Trace(__FILENAME__, __LINE__, "Method = {}", parser_->method);
 
     }
 
@@ -507,7 +494,7 @@ HttpParser::ErrorType HttpParser::ParseHttpRequest(
                 parts,
                 MAX_PATH_SIZE);
 
-        DebugTrace("ret = {}", ret);
+        // DebugTrace("ret = {}", ret);
 
         if (url.query)
         {
@@ -536,13 +523,11 @@ HttpParser::ErrorType HttpParser::ParseHttpRequest(
         const auto route_result =
                 Route(parts, http_data_.method, ret);
         
-        // Trace("route_result = = {}", static_cast<int>(route_result));
-
         ENSURE_TRUE_OTHERWISE_RETURN(
                 route_result == ErrorType::ErrorTypeOk,
                 route_result);
 
-        DebugTrace("route_result = {}", route_result);
+        DebugTrace("route_result = {}", static_cast<int>(route_result));
     }
 
     return HttpParser::ErrorType::ErrorTypeOk;

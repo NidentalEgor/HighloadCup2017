@@ -3,7 +3,7 @@ project (HighloadCup2017)
 
 set(SERVER_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 
-SET(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} "-std=c++14 -pthread")
+SET(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} "-std=c++14 -pthread -rdynamic")
 
 # temp
 include_directories(${SERVER_DIR}/HttpServer)

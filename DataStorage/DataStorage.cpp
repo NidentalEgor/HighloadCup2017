@@ -10,8 +10,8 @@
 
 #include "rapidjson/rapidjson.h"
 #include "rapidjson/filereadstream.h"
-#include "rapidjson/document.h"
-#include <cstdio>
+#include "../Submodules/rapidjson/include/rapidjson/document.h"
+#include "../Submodules/zipper/zipper/unzipper.h"
 
 void DataStorage::LoadData(const std::string& folder_path)
 {
@@ -55,6 +55,122 @@ void DataStorage::LoadData(const std::string& folder_path)
     ///
 //     DumpData();
     ///
+}
+
+std::vector<std::string> FileNames(
+        const std::string& data_name,
+        const std::string& pattern)
+{
+    zipper::Unzipper unzipper(data_name);
+    std::vector<zipper::ZipEntry> entries = unzipper.entries();
+    std::vector<std::string> names;
+    for (auto& e : entries)
+    {
+        if (e.name.find(std::string("data/FULL/data/") + pattern) == 0)
+        {
+            names.push_back(e.name);
+        }
+    }
+
+    unzipper.close();
+
+    return std::move(names);
+}
+
+std::vector<unsigned char> GetFileContent(
+        const std::string& data_name,
+        const std::string& filename)
+{
+    std::vector<unsigned char> unzipped_entry;
+    zipper::Unzipper unzipper(data_name);
+    unzipper.extractEntryToMemory(filename, unzipped_entry);
+    unzipper.close();
+
+    return unzipped_entry;
+}
+
+void DataStorage::InitializeUsers(
+        const std::string& path_to_zipped_data)
+{
+  Trace("InitializeUsers");
+  std::vector<std::string> file_names =
+          FileNames(path_to_zipped_data, "users_");
+  
+  for (const auto& name : file_names)
+  {
+    std::vector<unsigned char> buffer =
+            GetFileContent(path_to_zipped_data, name);
+    rapidjson::Document d;
+    d.Parse((char*)buffer.data(), buffer.size());
+    rapidjson::Value& users = d["users"];
+
+    for (auto& u : users.GetArray())
+    {
+        User user;
+        user.Deserialize(u);
+        users_.emplace(user.GetId(), user);
+    }
+  }
+}
+
+void DataStorage::InitializeLocations(
+        const std::string& path_to_zipped_data)
+{
+    Trace("InitializeLocations");
+    std::vector<std::string> file_names =
+            FileNames(path_to_zipped_data ,"locations_");
+  
+    for (const auto& name : file_names)
+    {
+        std::vector<unsigned char> buffer =
+                GetFileContent(path_to_zipped_data, name);
+        rapidjson::Document d;
+        d.Parse((char*)buffer.data(), buffer.size());
+        rapidjson::Value& locations = d["locations"];
+
+        for (auto& l : locations.GetArray())
+        {
+            Location location;
+            location.Deserialize(l);
+            locations_.emplace(location.GetId(), location);
+        }
+    }
+}
+
+void DataStorage::InitializeVisits(
+        const std::string& path_to_zipped_data)
+{
+    Trace("InitializeVisits");
+    std::vector<std::string> file_names =
+            FileNames(path_to_zipped_data, "visits_");
+
+    for (const auto& name : file_names)
+    {
+        std::vector<unsigned char> buffer =
+                GetFileContent(path_to_zipped_data, name);
+        rapidjson::Document d;
+        d.Parse((char*)buffer.data(), buffer.size());
+        rapidjson::Value& visits = d["visits"];
+
+        for (auto& v : visits.GetArray())
+        {
+            Visit visit;
+            visit.Deserialize(v);
+            visits_.emplace(visit.GetId(), visit);
+        }
+    }
+}
+
+void DataStorage::LoadZippedData(
+        const std::string& path_to_zipped_data)
+{
+    InitializeUsers(path_to_zipped_data);
+    InitializeVisits(path_to_zipped_data);
+    InitializeLocations(path_to_zipped_data);
+
+    MapEntities();
+
+    DumpData();
 }
 
 template <typename T>
@@ -140,7 +256,7 @@ std::unique_ptr<std::string> DataStorage::GetEntityById(
         const Container<T>& entities) const
 {
     const auto entity = entities.find(entity_id);
-            
+
     return
         entity == entities.end()
         ? nullptr
@@ -263,7 +379,7 @@ std::unique_ptr<std::string> DataStorage::GetVisistsByUserId(
         ENSURE_TRUE_OTHERWISE_CONTINUE(
                 location != locations_.end());
         
-        result += R"({"mark:")";
+        result += R"({"mark":)";
         result += std::to_string(visit.mark_);
         result += R"(,"visited_at":)";
         result += std::to_string(visit.visited_at_);
@@ -467,11 +583,45 @@ DataStorage::UpdateEntityStatus DataStorage::UpdateUser(
         const User& user)
 {
     // May I recalc something?
-    return UpdateEntity<User>(user, users_);
+//     return UpdateEntity<User>(user, users_);
+
+    ENSURE_TRUE_OTHERWISE_RETURN(
+            users_.find(user.id_) != users_.end(),
+            UpdateEntityStatus::EntityNotFound)
+
+    auto& user_to_update =
+                users_[user.id_];
+
+    if (!user.email.empty())
+    {
+        user_to_update.email = user.email;    
+    }
+
+    if (!user.first_name.empty())
+    {
+        user_to_update.first_name = user.first_name;
+    }
+
+    if (!user.last_name.empty())
+    {
+        user_to_update.last_name = user.last_name;
+    }
+
+    if (user.gender != Gender::Any)
+    {
+        user_to_update.gender = user.gender;
+    }
+
+    if (user.birth_date != std::numeric_limits<Timestamp>::min())
+    {
+        user_to_update.birth_date = user.birth_date;
+    }
+
+    return UpdateEntityStatus::EntitySuccessfullyUpdated;
 }
 
 DataStorage::UpdateEntityStatus DataStorage::UpdateVisit(
-        const Visit& visit)
+        const Visit& visit1)
 {
     // May I recalc something?
 
@@ -480,6 +630,35 @@ DataStorage::UpdateEntityStatus DataStorage::UpdateVisit(
     // MappedMultiIndexes users_to_visits_; // yes
     // MappedMultiIndexes locations_to_visits_;
     // MappedMultiIndexes locations_to_users_;
+    auto visit = visit1;
+
+    ENSURE_TRUE_OTHERWISE_RETURN(
+            visits_.find(visit.id_) != visits_.end(),
+            UpdateEntityStatus::EntityNotFound);
+
+    // dirty hack
+    auto& visit_to_update = visits_[visit.id_];
+    if (visit.location_id_ == std::numeric_limits<uint32_t>::max())
+    {
+        visit.location_id_ = visit_to_update.location_id_;
+    }
+
+    if (visit.user_id_ == std::numeric_limits<uint32_t>::max())
+    {
+        visit.user_id_ = visit_to_update.user_id_;
+    }
+
+    if (visit.visited_at_ == std::numeric_limits<Timestamp>::max())
+    {
+        visit.visited_at_ = visit_to_update.visited_at_;
+    }
+
+    if (visit.mark_ == std::numeric_limits<Mark>::max())
+    {
+        visit.mark_ = visit_to_update.mark_;
+    }
+    visits_[visit.id_] = visit;
+    // dirty hack
 
     const auto visit_id_to_location =
             visits_to_locations_.find(visit.id_);
@@ -498,6 +677,10 @@ DataStorage::UpdateEntityStatus DataStorage::UpdateVisit(
     ///
     const auto current_visit =
             visits_.find(visit.id_);
+
+    ENSURE_TRUE_OTHERWISE_RETURN(
+            current_visit != visits_.end(),
+            UpdateEntityStatus::EntityNotFound);
     ///
     if (visit.user_id_ != current_visit->second.user_id_)
     {
@@ -525,9 +708,9 @@ DataStorage::UpdateEntityStatus DataStorage::UpdateVisit(
     const auto location_id_to_visits =
             locations_to_visits_.find(
                 current_visit->second.location_id_);
-//     ENSURE_TRUE_OTHERWISE_RETURN(
-//             location_id_to_visits != locations_to_visits_.end(),
-//             UpdateEntityStatus::EntityNotFound);
+    ENSURE_TRUE_OTHERWISE_RETURN(
+            location_id_to_visits != locations_to_visits_.end(),
+            UpdateEntityStatus::EntityNotFound);
 //     location_id_to_visits->second.erase(
 //             location_id_to_visits->second.find(
 //                 current_visit->second.visited_at_));
@@ -571,14 +754,44 @@ DataStorage::UpdateEntityStatus DataStorage::UpdateVisit(
         // DebugTrace("if not (user != users_.end())");
     }
     
-    return UpdateEntity<Visit>(visit, visits_);
+    // return UpdateEntity<Visit>(visit, visits_);
+    return DataStorage::UpdateEntityStatus::EntitySuccessfullyUpdated;
 }
 
 DataStorage::UpdateEntityStatus DataStorage::UpdateLocation(
         const Location& location)
 {
     // May I recalc something?
-    return UpdateEntity<Location>(location, locations_);
+//     return UpdateEntity<Location>(location, locations_);
+
+    ENSURE_TRUE_OTHERWISE_RETURN(
+            locations_.find(location.id_) != locations_.end(),
+            UpdateEntityStatus::EntityNotFound)
+
+    auto& location_to_update =
+                locations_[location.id_];
+
+    if (location.distance_ != std::numeric_limits<uint64_t>::min())
+    {
+        location_to_update.distance_ = location.distance_;    
+    }
+
+    if (location.place_ != "")
+    {
+        location_to_update.place_ = location.place_;
+    }
+
+    if (location.country_ != "")
+    {
+        location_to_update.country_ = location.country_;
+    }
+
+    if (location.city_ != "")
+    {
+        location_to_update.city_ = location.city_;
+    }
+
+    return UpdateEntityStatus::EntitySuccessfullyUpdated;
 }
 
 template <typename T>
@@ -586,12 +799,15 @@ DataStorage::UpdateEntityStatus DataStorage::UpdateEntity(
         const T& entity,
         Container<T>& entities)
 {
+    std::cout << "DataStorage::UpdateEntity" << std::endl;
     const auto entity_to_update = entities.find(entity.id_);
+    std::cout << "DataStorage::UpdateEntity 2" << std::endl;
 
     ENSURE_TRUE_OTHERWISE_RETURN(
             entity_to_update != entities.end(),
             UpdateEntityStatus::EntityNotFound)
 
+    std::cout << "DataStorage::UpdateEntity 3" << std::endl;
     entities[entity.id_] = entity;
 
     return UpdateEntityStatus::EntitySuccessfullyUpdated;

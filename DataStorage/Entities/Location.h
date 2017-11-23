@@ -9,11 +9,13 @@
 #include "Identifiable.h"
 #include "ISerializable.h"
 #include "IDeserializable.h"
+#include "IValidateable.h"
 
 class Location
     : public Identifiable
     , public IDeserializable
     , public ISerializable
+    , public IValidateable
 {
 public:
     Location(
@@ -31,6 +33,9 @@ public:
             const rapidjson::Value& location_element) override final;
 
     std::unique_ptr<std::string> Serialize() const override final;
+
+    virtual bool Validate(
+            const char* content) const override;
 
 // private:
 public:
