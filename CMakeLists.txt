@@ -35,7 +35,7 @@ add_subdirectory(Submodules)
 add_subdirectory(DataStorage)
 add_subdirectory(Tests)
 add_subdirectory(HttpParser)
-add_subdirectory(DataExtracter)
+#add_subdirectory(DataExtracter)
 add_subdirectory(Utils)
 
 TARGET_LINK_LIBRARIES(Server
