@@ -2,7 +2,7 @@
 #define I_DESERIALIZABLE_H_INCLUDED
 #pragma once
 
-#include "rapidjson/document.h"
+#include "../../Submodules/rapidjson/include/rapidjson/document.h"
 
 class IDeserializable
 {

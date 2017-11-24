@@ -1,21 +1,7 @@
 cmake_minimum_required (VERSION 3.5)
 project (HighloadCup2017)
 
-set(SERVER_DIR ${CMAKE_CURRENT_SOURCE_DIR})
-
 SET(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} "-std=c++14 -pthread -rdynamic")
-
-# temp
-include_directories(${SERVER_DIR}/HttpServer)
-include_directories(${SERVER_DIR}/HttpParser)
-include_directories(/home/egor/Repositories/highloadcup2017/Submodules/http-parser)
-include_directories(${SERVER_DIR}/DataStorage)
-include_directories(${SERVER_DIR}/Submodules/rapidjson/include)
-include_directories(${SERVER_DIR}/Utils)
-include_directories(${SERVER_DIR}/DataExtracter)
-# temp
-
-file(GLOB SERVER_SOURCES ${SERVER_DIR}/*.cpp)
 
 set(Boost_USE_STATIC_LIBS off)
 set(Boost_USE_MULTITHREAD on)
@@ -29,7 +15,7 @@ set(BOOST_LIBS ${Boost_SYSTEM_LIBRARY} ${Boost_THREAD_LIBRARY} ${Boost_REGEX_LIB
 
 include(CMakeToolsHelpers OPTIONAL)
 
-add_executable(Server ${SERVER_SOURCES})
+add_executable(Server ${CMAKE_CURRENT_SOURCE_DIR}/Main.cpp)
 
 add_subdirectory(Submodules)
 add_subdirectory(DataStorage)

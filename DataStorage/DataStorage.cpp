@@ -5,12 +5,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "Macroses.h"
+#include "../Utils/Macroses.h"
 #include "DataStorage.h"
 
-#include "rapidjson/rapidjson.h"
-#include "rapidjson/filereadstream.h"
 #include "../Submodules/rapidjson/include/rapidjson/document.h"
+#include "../Submodules/rapidjson/include/rapidjson/filereadstream.h"
 #include "../Submodules/zipper/zipper/unzipper.h"
 
 void DataStorage::LoadData(const std::string& folder_path)

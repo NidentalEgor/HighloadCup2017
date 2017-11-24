@@ -4,7 +4,7 @@
 
 #include <string>
 
-#include "DataStorage.h"
+#include "../DataStorage/DataStorage.h"
 
 class TestDataLoadableTest
 {

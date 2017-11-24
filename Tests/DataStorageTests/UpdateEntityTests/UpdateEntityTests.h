@@ -1,7 +1,7 @@
 #include "gtest/gtest.h"
-#include "rapidjson/document.h"
+#include "../../../Submodules/rapidjson/include/rapidjson/document.h"
 
-#include "DataStorage.h"
+#include "../../../DataStorage/DataStorage.h"
 #include "../../TestDataLoadableTest.h"
 
 class UpdateEntityTests

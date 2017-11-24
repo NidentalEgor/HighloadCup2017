@@ -1,6 +1,6 @@
 #include "gtest/gtest.h"
 
-#include "DataStorage.h"
+#include "../../../DataStorage/DataStorage.h"
 #include "../../TimeMeasurableTest.h"
 #include "../../TestDataLoadableTest.h"
 #include "../../JsonComparableTest.h"
