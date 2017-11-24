@@ -25,7 +25,6 @@ std::unordered_map<int, std::string> EntitiesValidator::entity_attribute_to_stri
 EntitiesValidator::EntitiesValidator()
     : attributes_mask_(0)
 {
-
 }
 
 bool EntitiesValidator::CheckStringAttribute(

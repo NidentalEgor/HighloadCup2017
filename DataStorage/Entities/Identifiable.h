@@ -2,6 +2,8 @@
 #define IDENTIFIABLE_H_INCLUDED
 #pragma once
 
+#include "DataTypes.h"
+
 class Identifiable
 {
 public:
@@ -9,19 +11,19 @@ public:
     {
     }
 
-    Identifiable(const uint32_t id)
+    Identifiable(const Id id)
         : id_(id)
     {
     }
 
-    uint32_t GetId()
+    Id GetId()
     {
         return id_;
     };
 
 // protected:
 public:
-    uint32_t id_;
+    Id id_;
 };
 
 #endif // IDENTIFIABLE_H_INCLUDED

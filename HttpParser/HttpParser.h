@@ -11,7 +11,7 @@
 #include "../DataStorage/Entities/DataTypes.h"
 #include "../Utils/Traceable.h"
 
-class HttpParser
+class HttpParser final
     : public Traceable
 {
 public:
@@ -83,7 +83,7 @@ public:
         return request_type_;
     }
 
-    uint32_t GetEntityId() const
+    Id GetEntityId() const
     {
         return entity_id_;
     }
@@ -120,10 +120,10 @@ public:
 
     std::string GetCountry() const
     {
-        return country_;
+        return country;
     }
 
-    uint32_t GetToDistance() const
+    Id GetToDistance() const
     {
         return to_distance_;
     }
@@ -139,17 +139,6 @@ public:
     }
 
 private:
-    enum class RequestEntityType
-    {
-        Users,
-        Locations,
-        Visits
-    };
-
-private:
-    void ParseHttpPostRequest(
-            const char* request) const;
-
     void ParseHttpGetRequest(
             const char* request) const;
 
@@ -164,25 +153,28 @@ private:
             size_t length);
     
     HttpParser::ErrorType Route(
+            unsigned int method,    
             char** parts,
-            unsigned int method,
             const size_t parts_amount);
     
     HttpParser::ErrorType SplitQuery(
             char* query);
 
+    std::pair<bool, long long> StringToNumber(
+            const char* string);
+
 private:
     std::unique_ptr<http_parser> parser_;
     http_parser_settings settings;
     RequestType request_type_;
-    uint32_t entity_id_;
+    Id entity_id_;
     Timestamp from_date_;
     Timestamp to_date_;
     Timestamp from_age_;
     Timestamp to_age_;
     Gender gender_;
-    std::string country_;
-    uint32_t to_distance_;
+    std::string country;
+    Id to_distance_;
     int additional_info_mask_;
     std::string entity_content_;
     HttpData http_data_;

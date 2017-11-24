@@ -8,6 +8,7 @@
 #include <memory>
 #include <limits>
 
+#include "Entities/DataTypes.h"
 #include "Entities/Location.h"
 #include "Entities/User.h"
 #include "Entities/Visit.h"
@@ -19,10 +20,10 @@ class DataStorage final
 {
 public:
     template <typename T>
-    using Container = std::unordered_map<uint32_t, T>;
-    using MappedIndexes = std::unordered_map<uint32_t, uint32_t>;
-    using TimestampToId = std::multimap<Timestamp, uint32_t>;
-    using MappedMultiIndexes = std::unordered_map<uint32_t, TimestampToId>;
+    using Container = std::unordered_map<Id, T>;
+    using MappedIndexes = std::unordered_map<Id, Id>;
+    using TimestampToId = std::multimap<Timestamp, Id>;
+    using MappedMultiIndexes = std::unordered_map<Id, TimestampToId>;
 
     enum class UpdateEntityStatus
     {
@@ -40,13 +41,13 @@ public:
     {
     public:
         explicit GetAverageLocationMarkQuery(
-                const uint32_t id)
+                const Id id)
             : id(id)
         {
         }
 
     public:
-        uint32_t id = 0;
+        Id id = 0;
         Timestamp from_date = std::numeric_limits<Timestamp>::min();
         Timestamp to_date = std::numeric_limits<Timestamp>::max();
         Timestamp from_age = std::numeric_limits<Timestamp>::min();
@@ -58,17 +59,17 @@ public:
     {
     public:
         explicit GetVisistsByUserIdQuery(
-                const uint32_t id)
+                const Id id)
             : id(id)
         {
         }
 
     public:
-        uint32_t id;
+        Id id;
         Timestamp from_date = std::numeric_limits<Timestamp>::min();
         Timestamp to_date = std::numeric_limits<Timestamp>::max();
         std::string country = "";
-        uint32_t to_distance = std::numeric_limits<uint32_t>::max();
+        Distance to_distance = std::numeric_limits<Distance>::max();
     };
 
 public:
@@ -94,13 +95,13 @@ public:
     }
 
     std::unique_ptr<std::string> GetLocationById(
-            const uint32_t location_id) const;
+            const Id location_id) const;
 
     std::unique_ptr<std::string> GetUserById(
-            const uint32_t user_id) const;
+            const Id user_id) const;
 
     std::unique_ptr<std::string> GetVisitById(
-            const uint32_t visit_id) const;
+            const Id visit_id) const;
 
     std::unique_ptr<std::string> GetVisistsByUserId(
             const GetVisistsByUserIdQuery& query_description) const;
@@ -147,7 +148,7 @@ private:
 
     template <typename T>
     std::unique_ptr<std::string> GetEntityById(
-            const uint32_t entity_id,
+            const Id entity_id,
             const Container<T>& entities) const;
 
     template <typename T>
@@ -175,19 +176,19 @@ private:
     void EraseByAge(
             const Timestamp from_age,
             Comparator comparator,
-            std::multimap<Timestamp, uint32_t>& visits) const;
+            std::multimap<Timestamp, Id>& visits) const;
 
     void EraseByGender(
             const Gender gender,
-            std::multimap<Timestamp, uint32_t>& visits) const;
+            std::multimap<Timestamp, Id>& visits) const;
 
     void EraseByCountry(
             const std::string& country,
-            std::multimap<Timestamp, uint32_t>& visits) const;
+            std::multimap<Timestamp, Id>& visits) const;
     
     void EraseByToDistance(
-            const uint32_t to_distance,
-            std::multimap<Timestamp, uint32_t>& visits) const;
+            const Distance to_distance,
+            std::multimap<Timestamp, Id>& visits) const;
 
 private:
     Container<Location> locations_;

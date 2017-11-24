@@ -209,17 +209,17 @@ void DataStorage::MapEntities()
     for (const auto& visit : visits_)
     {
         const auto location =
-                locations_.find(visit.second.location_id_);
+                locations_.find(visit.second.location_id);
         const auto user =
-                users_.find(visit.second.user_id_);
+                users_.find(visit.second.user_id);
         if (location != locations_.end() &&
             user != users_.end())
         {
             visits_to_locations_.emplace(visit.first, location->first);
-            locations_to_visits_[location->first].emplace(visit.second.visited_at_, visit.first);
+            locations_to_visits_[location->first].emplace(visit.second.visited_at, visit.first);
             locations_to_users_[location->first].emplace(user->second.birth_date, user->first);
             visits_to_user_.emplace(visit.first, user->first);
-            users_to_visits_[user->first].emplace(visit.second.visited_at_, visit.first);
+            users_to_visits_[user->first].emplace(visit.second.visited_at, visit.first);
         }
         else
         {
@@ -233,26 +233,26 @@ void DataStorage::MapEntities()
 }
 
 std::unique_ptr<std::string> DataStorage::GetLocationById(
-        const uint32_t location_id) const
+        const Id location_id) const
 {
     return GetEntityById<Location>(location_id, locations_);
 }
 
 std::unique_ptr<std::string> DataStorage::GetUserById(
-        const uint32_t user_id) const
+        const Id user_id) const
 {
     return GetEntityById<User>(user_id, users_);
 }
 
 std::unique_ptr<std::string> DataStorage::GetVisitById(
-        const uint32_t visit_id) const
+        const Id visit_id) const
 {
     return GetEntityById<Visit>(visit_id, visits_);
 }
 
 template <typename T>
 std::unique_ptr<std::string> DataStorage::GetEntityById(
-        const uint32_t entity_id,
+        const Id entity_id,
         const Container<T>& entities) const
 {
     const auto entity = entities.find(entity_id);
@@ -265,7 +265,7 @@ std::unique_ptr<std::string> DataStorage::GetEntityById(
 
 void DataStorage::EraseByCountry(
         const std::string& country,
-        std::multimap<Timestamp, uint32_t>& visits) const
+        std::multimap<Timestamp, Id>& visits) const
 {
     auto visit_description = visits.begin();
     while (visit_description != visits.end())
@@ -280,7 +280,7 @@ void DataStorage::EraseByCountry(
 
         const auto location =
                 locations_.find(visit_id_to_location_id->second);
-        if (location->second.country_ != country)
+        if (location->second.country != country)
         {
             visit_description = visits.erase(visit_description);
             continue;
@@ -291,8 +291,8 @@ void DataStorage::EraseByCountry(
 }
 
 void DataStorage::EraseByToDistance(
-        const uint32_t to_distance,
-        std::multimap<Timestamp, uint32_t>& visits) const
+        const Distance to_distance,
+        std::multimap<Timestamp, Id>& visits) const
 {
     auto visit_description = visits.begin();
     while (visit_description != visits.end())
@@ -307,7 +307,7 @@ void DataStorage::EraseByToDistance(
 
         const auto location =
                 locations_.find(visit_id_to_location_id->second);
-        if (location->second.distance_ >= to_distance)
+        if (location->second.distance >= to_distance)
         {
             visit_description = visits.erase(visit_description);
             continue;
@@ -359,7 +359,7 @@ std::unique_ptr<std::string> DataStorage::GetVisistsByUserId(
                 std::make_unique<std::string>(R"({"visits":[]})"));
     }
 
-    if (query_description.to_distance != std::numeric_limits<uint32_t>::max())
+    if (query_description.to_distance != std::numeric_limits<Distance>::max())
     {
         EraseByToDistance(
                 query_description.to_distance,
@@ -374,17 +374,17 @@ std::unique_ptr<std::string> DataStorage::GetVisistsByUserId(
     {
         // result += *visits_.find(visit_description.second)->second.Serialize();
         const auto visit = visits_.find(visit_description.second)->second;
-        const auto location = locations_.find(visit.location_id_);
+        const auto location = locations_.find(visit.location_id);
 
         ENSURE_TRUE_OTHERWISE_CONTINUE(
                 location != locations_.end());
         
         result += R"({"mark":)";
-        result += std::to_string(visit.mark_);
+        result += std::to_string(visit.mark);
         result += R"(,"visited_at":)";
-        result += std::to_string(visit.visited_at_);
+        result += std::to_string(visit.visited_at);
         result += R"(,"place":")";
-        result += location->second.place_;
+        result += location->second.place;
         result += R"("},)";
     }
 
@@ -421,7 +421,7 @@ template <typename Comparator>
 void DataStorage::EraseByAge(
         const Timestamp from_age,
         Comparator comparator,
-        std::multimap<Timestamp, uint32_t>& visits) const
+        std::multimap<Timestamp, Id>& visits) const
 {   
     const auto from_age_date =
             GetBoundaryBirthDate(from_age);
@@ -454,7 +454,7 @@ void DataStorage::EraseByAge(
 
 void DataStorage::EraseByGender(
         const Gender gender,
-        std::multimap<Timestamp, uint32_t>& visits) const
+        std::multimap<Timestamp, Id>& visits) const
 {
     auto current_visit = visits.begin();
     while (current_visit != visits.end())
@@ -486,13 +486,13 @@ std::unique_ptr<std::string> DataStorage::GetAverageLocationMark(
             locations_.find(query_description.id) != locations_.end(),
             nullptr);
 
-    const auto location_id_to_visits =
+    const auto location_idto_visits =
             locations_to_visits_.find(query_description.id);
     ENSURE_TRUE_OTHERWISE_RETURN(
-            location_id_to_visits != locations_to_visits_.end(),
+            location_idto_visits != locations_to_visits_.end(),
             std::make_unique<std::string>(R"({"avg":0})"));
 
-    auto visits = location_id_to_visits->second;
+    auto visits = location_idto_visits->second;
 
     if (query_description.from_date != std::numeric_limits<Timestamp>::min())
     {
@@ -553,7 +553,7 @@ std::unique_ptr<std::string> DataStorage::GetAverageLocationMark(
     for (auto visit : visits)
     {
         const auto& current_visit = visits_.find(visit.second)->second;
-        sum += visits_.find(visit.second)->second.mark_;
+        sum += visits_.find(visit.second)->second.mark;
         ++visits_amount;
     }
 
@@ -638,24 +638,24 @@ DataStorage::UpdateEntityStatus DataStorage::UpdateVisit(
 
     // dirty hack
     auto& visit_to_update = visits_[visit.id_];
-    if (visit.location_id_ == std::numeric_limits<uint32_t>::max())
+    if (visit.location_id == std::numeric_limits<Id>::max())
     {
-        visit.location_id_ = visit_to_update.location_id_;
+        visit.location_id = visit_to_update.location_id;
     }
 
-    if (visit.user_id_ == std::numeric_limits<uint32_t>::max())
+    if (visit.user_id == std::numeric_limits<Id>::max())
     {
-        visit.user_id_ = visit_to_update.user_id_;
+        visit.user_id = visit_to_update.user_id;
     }
 
-    if (visit.visited_at_ == std::numeric_limits<Timestamp>::max())
+    if (visit.visited_at == std::numeric_limits<Timestamp>::max())
     {
-        visit.visited_at_ = visit_to_update.visited_at_;
+        visit.visited_at = visit_to_update.visited_at;
     }
 
-    if (visit.mark_ == std::numeric_limits<Mark>::max())
+    if (visit.mark == std::numeric_limits<Mark>::max())
     {
-        visit.mark_ = visit_to_update.mark_;
+        visit.mark = visit_to_update.mark;
     }
     visits_[visit.id_] = visit;
     // dirty hack
@@ -665,14 +665,14 @@ DataStorage::UpdateEntityStatus DataStorage::UpdateVisit(
     ENSURE_TRUE_OTHERWISE_RETURN(
             visit_id_to_location != visits_to_locations_.end(),
             UpdateEntityStatus::EntityNotFound); // ???
-    visits_to_locations_[visit.id_] = visit.location_id_;
+    visits_to_locations_[visit.id_] = visit.location_id;
 
     const auto visit_id_to_user =
             visits_to_user_.find(visit.id_);
     ENSURE_TRUE_OTHERWISE_RETURN(
             visit_id_to_user != visits_to_user_.end(),
             UpdateEntityStatus::EntityNotFound); // ???
-    visits_to_user_[visit.id_] = visit.user_id_;
+    visits_to_user_[visit.id_] = visit.user_id;
 
     ///
     const auto current_visit =
@@ -682,22 +682,22 @@ DataStorage::UpdateEntityStatus DataStorage::UpdateVisit(
             current_visit != visits_.end(),
             UpdateEntityStatus::EntityNotFound);
     ///
-    if (visit.user_id_ != current_visit->second.user_id_)
+    if (visit.user_id != current_visit->second.user_id)
     {
         const auto user_id_to_visits =
                 users_to_visits_.find(
-                    current_visit->second.user_id_);
+                    current_visit->second.user_id);
         // ENSURE
         const auto element_to_erase =
                 user_id_to_visits->second.find(
-                    current_visit->second.visited_at_);
+                    current_visit->second.visited_at);
         //ENSURE
         user_id_to_visits->second.erase(
-                // current_visit->second.visited_at_);
+                // current_visit->second.visited_at);
                 element_to_erase);
         
-        users_to_visits_[visit.user_id_].emplace(
-                visit.visited_at_,
+        users_to_visits_[visit.user_id].emplace(
+                visit.visited_at,
                 visit.id_);
     }
     else
@@ -705,26 +705,26 @@ DataStorage::UpdateEntityStatus DataStorage::UpdateVisit(
 
     }
 
-    const auto location_id_to_visits =
+    const auto location_idto_visits =
             locations_to_visits_.find(
-                current_visit->second.location_id_);
+                current_visit->second.location_id);
     ENSURE_TRUE_OTHERWISE_RETURN(
-            location_id_to_visits != locations_to_visits_.end(),
+            location_idto_visits != locations_to_visits_.end(),
             UpdateEntityStatus::EntityNotFound);
-//     location_id_to_visits->second.erase(
-//             location_id_to_visits->second.find(
-//                 current_visit->second.visited_at_));
+//     location_idto_visits->second.erase(
+//             location_idto_visits->second.find(
+//                 current_visit->second.visited_at));
 
     const auto good_visits =
-            location_id_to_visits->second.equal_range(
-                current_visit->second.visited_at_);
+            location_idto_visits->second.equal_range(
+                current_visit->second.visited_at);
     auto current_good_visit = good_visits.first;
     while (current_good_visit != good_visits.second)
     {
         if (current_good_visit->second == current_visit->first)
         {
             current_good_visit =
-                    location_id_to_visits->second.erase(
+                    location_idto_visits->second.erase(
                         current_good_visit);
         }
         else
@@ -733,19 +733,19 @@ DataStorage::UpdateEntityStatus DataStorage::UpdateVisit(
         }
     }
 
-    locations_to_visits_[visit.location_id_].emplace(
-            visit.visited_at_,
+    locations_to_visits_[visit.location_id].emplace(
+            visit.visited_at,
             visit.id_);
     
-    const auto location_id_to_users =
-            locations_to_users_.find(current_visit->second.location_id_);
+    const auto location_idto_users =
+            locations_to_users_.find(current_visit->second.location_id);
     // ENSURE
-    auto user = users_.find(current_visit->second.user_id_);
-    locations_to_users_[current_visit->second.location_id_].erase(user->second.birth_date);
-    user = users_.find(visit.user_id_);
+    auto user = users_.find(current_visit->second.user_id);
+    locations_to_users_[current_visit->second.location_id].erase(user->second.birth_date);
+    user = users_.find(visit.user_id);
     if (user != users_.end())
     {
-        locations_to_users_[visit.location_id_].emplace(
+        locations_to_users_[visit.location_id].emplace(
                 user->second.birth_date,
                 user->first);
     }
@@ -771,24 +771,24 @@ DataStorage::UpdateEntityStatus DataStorage::UpdateLocation(
     auto& location_to_update =
                 locations_[location.id_];
 
-    if (location.distance_ != std::numeric_limits<uint64_t>::min())
+    if (location.distance != std::numeric_limits<uint64_t>::min())
     {
-        location_to_update.distance_ = location.distance_;    
+        location_to_update.distance = location.distance;    
     }
 
-    if (location.place_ != "")
+    if (location.place != "")
     {
-        location_to_update.place_ = location.place_;
+        location_to_update.place = location.place;
     }
 
-    if (location.country_ != "")
+    if (location.country != "")
     {
-        location_to_update.country_ = location.country_;
+        location_to_update.country = location.country;
     }
 
-    if (location.city_ != "")
+    if (location.city != "")
     {
-        location_to_update.city_ = location.city_;
+        location_to_update.city = location.city;
     }
 
     return UpdateEntityStatus::EntitySuccessfullyUpdated;
@@ -854,40 +854,40 @@ DataStorage::AddEntityStatus DataStorage::AddVisit(
 
     visits_to_user_.emplace(
             visit.id_,
-            visit.user_id_);
+            visit.user_id);
     visits_to_locations_.emplace(
             visit.id_,
-            visit.location_id_);
+            visit.location_id);
 
-    const auto location_id_to_visits =
-            locations_to_visits_.find(visit.location_id_);
-    if (location_id_to_visits == locations_to_visits_.end())
+    const auto location_idto_visits =
+            locations_to_visits_.find(visit.location_id);
+    if (location_idto_visits == locations_to_visits_.end())
     {
         locations_to_visits_.emplace(
-                visit.location_id_,
-                TimestampToId{ {visit.visited_at_, visit.id_} });
+                visit.location_id,
+                TimestampToId{ {visit.visited_at, visit.id_} });
     }
     else
     {
-        location_id_to_visits->second.emplace(
-                visit.visited_at_,
+        location_idto_visits->second.emplace(
+                visit.visited_at,
                 visit.id_);
     }
 
     const auto user_id_to_visits =
-            users_to_visits_.find(visit.user_id_);
+            users_to_visits_.find(visit.user_id);
     if (user_id_to_visits == users_to_visits_.end())
     {
         users_to_visits_.emplace(
-                visit.user_id_,
-                TimestampToId{ {visit.visited_at_, visit.id_} });
+                visit.user_id,
+                TimestampToId{ {visit.visited_at, visit.id_} });
     }
     else
     {
         // Try to add enywhere - user can not be in two
         // locations in same time/
         user_id_to_visits->second.emplace(
-                visit.visited_at_,
+                visit.visited_at,
                 visit.id_);
     }
 
@@ -902,28 +902,13 @@ DataStorage::AddEntityStatus DataStorage::AddLocation(
             DataStorage::AddEntityStatus::EntityAlreadyExist)
     locations_.emplace(location.id_,location);
 
-    // const auto location_id_to_visits =
-    //         locations_to_visits_.find(location.id_);
-    // if (location_id_to_visits == locations_to_visits_.end())
-    // {
-    //     locations_to_visits_.emplace(
-    //             location.id_,
-    //             std::multimap<Timestamp,uint32_t>());
-    // }
-    // else
-    // {
-    //     ///
-    //     // Do nothing???
-    //     ///
-    // }
-
-    const auto location_id_to_users =
+    const auto location_idto_users =
             locations_to_users_.find(location.id_);
-    if (location_id_to_users == locations_to_users_.end())
+    if (location_idto_users == locations_to_users_.end())
     {
         locations_to_users_.emplace(
                 location.id_,
-                std::multimap<Timestamp, uint32_t>());
+                std::multimap<Timestamp, Id>());
     }
     else
     {

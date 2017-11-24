@@ -15,7 +15,7 @@ User::User()
 }
 
 User::User(
-        const uint32_t id,
+        const Id id,
         const std::string& email,
         const std::string& first_name,
         const std::string& last_name,

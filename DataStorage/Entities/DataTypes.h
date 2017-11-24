@@ -4,7 +4,13 @@
 
 #include <string>
 
+using Id = uint32_t;
+
+using Distance = uint32_t;
+
 using Timestamp = long int;
+
+using Mark = short;
 
 enum class Gender
 {

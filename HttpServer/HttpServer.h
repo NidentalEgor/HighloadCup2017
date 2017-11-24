@@ -415,28 +415,28 @@ public:
                 const auto mask = entities_validator.GetMask();
                 if (mask & static_cast<int>(EntitiesValidator::EntityAttributes::LocationId))
                 {
-                    visit.location_id_ =
+                    visit.location_id =
                             entities_validator.GetUint64Attribute(
                                 EntitiesValidator::EntityAttributes::LocationId);
                 }
                             
                 if (mask & static_cast<int>(EntitiesValidator::EntityAttributes::UserId))
                 {
-                    visit.user_id_ =
+                    visit.user_id =
                             entities_validator.GetUint64Attribute(
                                 EntitiesValidator::EntityAttributes::UserId);
                 }
                 
                 if (mask & static_cast<int>(EntitiesValidator::EntityAttributes::VisitedAt))
                 {
-                    visit.visited_at_ =
+                    visit.visited_at =
                             entities_validator.GetInt64Attribute(
                                 EntitiesValidator::EntityAttributes::VisitedAt);
                 }
 
                 if (mask & static_cast<int>(EntitiesValidator::EntityAttributes::Mark))
                 {
-                    visit.mark_ =
+                    visit.mark =
                             entities_validator.GetUint64Attribute(
                                 EntitiesValidator::EntityAttributes::Mark);
                 }
@@ -472,28 +472,28 @@ public:
                 const auto mask = entities_validator.GetMask();
                 if (mask & static_cast<int>(EntitiesValidator::EntityAttributes::Place))
                 {
-                    location.place_ =
+                    location.place =
                             entities_validator.GetStringAttribute(
                                 EntitiesValidator::EntityAttributes::Place);
                 }
 
                 if (mask & static_cast<int>(EntitiesValidator::EntityAttributes::Country))
                 {
-                    location.country_ =
+                    location.country =
                             entities_validator.GetStringAttribute(
                                 EntitiesValidator::EntityAttributes::Country);
                 }
 
                 if (mask & static_cast<int>(EntitiesValidator::EntityAttributes::City))
                 {
-                    location.city_ =
+                    location.city =
                             entities_validator.GetStringAttribute(
                                 EntitiesValidator::EntityAttributes::City);
                 }
 
                 if (mask & static_cast<int>(EntitiesValidator::EntityAttributes::Distance))
                 {
-                    location.distance_ =
+                    location.distance =
                             entities_validator.GetUint64Attribute(
                                 EntitiesValidator::EntityAttributes::Distance);
                 }
@@ -1158,28 +1158,28 @@ void FillAverageLocationMarkQuery(
                 const auto mask = entities_validator.GetMask();
                 if (mask & static_cast<int>(EntitiesValidator::EntityAttributes::LocationId))
                 {
-                    visit.location_id_ =
+                    visit.location_id =
                             entities_validator.GetUint64Attribute(
                                 EntitiesValidator::EntityAttributes::LocationId);
                 }
                             
                 if (mask & static_cast<int>(EntitiesValidator::EntityAttributes::UserId))
                 {
-                    visit.user_id_ =
+                    visit.user_id =
                             entities_validator.GetUint64Attribute(
                                 EntitiesValidator::EntityAttributes::UserId);
                 }
                 
                 if (mask & static_cast<int>(EntitiesValidator::EntityAttributes::VisitedAt))
                 {
-                    visit.visited_at_ =
+                    visit.visited_at =
                             entities_validator.GetInt64Attribute(
                                 EntitiesValidator::EntityAttributes::VisitedAt);
                 }
 
                 if (mask & static_cast<int>(EntitiesValidator::EntityAttributes::Mark))
                 {
-                    visit.mark_ =
+                    visit.mark =
                             entities_validator.GetUint64Attribute(
                                 EntitiesValidator::EntityAttributes::Mark);
                 }
@@ -1215,28 +1215,28 @@ void FillAverageLocationMarkQuery(
                 const auto mask = entities_validator.GetMask();
                 if (mask & static_cast<int>(EntitiesValidator::EntityAttributes::Place))
                 {
-                    location.place_ =
+                    location.place =
                             entities_validator.GetStringAttribute(
                                 EntitiesValidator::EntityAttributes::Place);
                 }
 
                 if (mask & static_cast<int>(EntitiesValidator::EntityAttributes::Country))
                 {
-                    location.country_ =
+                    location.country =
                             entities_validator.GetStringAttribute(
                                 EntitiesValidator::EntityAttributes::Country);
                 }
 
                 if (mask & static_cast<int>(EntitiesValidator::EntityAttributes::City))
                 {
-                    location.city_ =
+                    location.city =
                             entities_validator.GetStringAttribute(
                                 EntitiesValidator::EntityAttributes::City);
                 }
 
                 if (mask & static_cast<int>(EntitiesValidator::EntityAttributes::Distance))
                 {
-                    location.distance_ =
+                    location.distance =
                             entities_validator.GetUint64Attribute(
                                 EntitiesValidator::EntityAttributes::Distance);
                 }

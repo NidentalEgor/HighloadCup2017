@@ -10,9 +10,7 @@
 #include "IDeserializable.h"
 #include "IValidateable.h"
 
-using Mark = short;
-
-class Visit
+struct Visit
     : public Identifiable
     , public IDeserializable
     , public ISerializable
@@ -20,9 +18,9 @@ class Visit
 {
 public:
     Visit(
-        const uint32_t id,
-        const uint32_t location_id,
-        const uint32_t user_id,
+        const Id id,
+        const Id location_id,
+        const Id user_id,
         const Timestamp visited_at,
         const Mark mark);
 
@@ -36,30 +34,11 @@ public:
     bool Validate(
             const char* content) const override;
 
-    // Visit(const rapidjson::Value& visit_element);
-
-    bool operator<(
-            const Visit& right) const;
-
-    bool operator<(
-            const Timestamp& right) const;
-    
-// private:
 public:
-    uint32_t location_id_;
-    uint32_t user_id_;
-    Timestamp visited_at_;
-    Mark mark_;
+    Id location_id;
+    Id user_id;
+    Timestamp visited_at;
+    Mark mark;
 };
-
-// struct VisitSorterByDate
-// {
-//     bool operator()(
-//             const Visit& left,
-//             const Visit& right)
-//     {
-//         return left.timestamp < right.time
-//     }
-// };
 
 #endif // VISIT_H_INCLUDED

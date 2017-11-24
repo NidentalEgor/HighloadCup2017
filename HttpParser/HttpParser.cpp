@@ -48,7 +48,7 @@ HttpParser::HttpParser()
     settings.on_body = OnBody;
 }
 
-std::pair<bool, long long> StringToNumber(
+std::pair<bool, long long> HttpParser::StringToNumber(
         const char* string)
 {
     size_t count = 0;
@@ -75,8 +75,8 @@ std::pair<bool, long long> StringToNumber(
 }
 
 HttpParser::ErrorType HttpParser::Route(
+        unsigned int method,    
         char** parts,
-        unsigned int method,
         const size_t parts_amount)
 {
     DebugTrace("HttpParser::Route");
@@ -376,7 +376,7 @@ HttpParser::ErrorType HttpParser::SplitQuery(
         {
             qs_decode(value);
 
-            country_ = value;
+            country = value;
             additional_info_mask_ |= static_cast<int>(HttpParserFlags::CountryFlag);
         }
     }
@@ -489,12 +489,10 @@ HttpParser::ErrorType HttpParser::ParseHttpRequest(
 // temp
 
         char* parts[MAX_PATH_SIZE];
-        auto ret = yuarel_split_path(
+        auto path_parts_amount = yuarel_split_path(
                 url.path,
                 parts,
                 MAX_PATH_SIZE);
-
-        // DebugTrace("ret = {}", ret);
 
         if (url.query)
         {
@@ -506,22 +504,22 @@ HttpParser::ErrorType HttpParser::ParseHttpRequest(
                     query_split_result);
         }
         
-        for (size_t i = 0; i < ret; ++i)
+        for (size_t i = 0; i < path_parts_amount; ++i)
         {
             DebugTrace("part[{}] = {}", i, parts[i]);
         }
       
         if (http_data_.request.body)
         {
-            DebugTrace("http_data_.request.body");
+            DebugTrace("Request body is not empty");
         }
         else
         {
-            DebugTrace("!http_data_.request.body");
+            DebugTrace("Request body is empty");
         }
 
         const auto route_result =
-                Route(parts, http_data_.method, ret);
+                Route(http_data_.method, parts, path_parts_amount);
         
         ENSURE_TRUE_OTHERWISE_RETURN(
                 route_result == ErrorType::ErrorTypeOk,
@@ -531,13 +529,4 @@ HttpParser::ErrorType HttpParser::ParseHttpRequest(
     }
 
     return HttpParser::ErrorType::ErrorTypeOk;
-}
-
-void HttpParser::ParseHttpPostRequest(
-        const char* request) const
-{
-    // /<entity>/<id>
-    // /<entity>/new
-
-
 }
