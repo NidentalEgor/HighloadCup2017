@@ -6,7 +6,6 @@
 #include "../Submodules/qs_parse/qs_parse.h"
 
 #include "../Utils/Macroses.h"
-
 #include "HttpParser.h"
 
 int HttpParser::OnUrl(
@@ -80,13 +79,9 @@ HttpParser::ErrorType HttpParser::Route(
         const size_t parts_amount)
 {
     DebugTrace("HttpParser::Route");
-    //
-    request_type_ = RequestType::None;
-    //
 
-    // ENSURE_TRUE_OTHERWISE_RETURN(
-    //         (parts_amount == 3 || parts_amount == 2),
-    //         ErrorType::ErrorTypeBadRequest);
+    request_type_ = RequestType::None;
+
     switch (method)
     {
         case HTTP_GET:

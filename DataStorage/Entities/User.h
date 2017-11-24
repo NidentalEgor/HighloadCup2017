@@ -5,13 +5,13 @@
 #include <string>
 #include <memory>
 
-#include "rapidjson/document.h"
-#include "Identifiable.h"
+#include "../../Submodules/rapidjson/include/rapidjson/document.h"
+
 #include "DataTypes.h"
+#include "Identifiable.h"
 #include "ISerializable.h"
 #include "IDeserializable.h"
 #include "IValidateable.h"
-#include "Visit.h"
 
 struct User
     : public Identifiable

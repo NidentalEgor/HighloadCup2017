@@ -5,7 +5,7 @@
 #include <memory>
 #include <string>
 
-#include "rapidjson/document.h"
+#include "../../Submodules/rapidjson/include/rapidjson/document.h"
 
 class ISerializable
 {

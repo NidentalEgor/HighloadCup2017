@@ -31,7 +31,8 @@ int main(int argc, char* argv[])
                 "5555",
                 Network::LoadedDataType::Unzipped,
                 // "/home/egor/Repositories/highload_data_zip/data.zip",
-                "/home/egor/Repositories/hlcupdocs/data/FULL/data/",
+                // "/home/egor/Repositories/hlcupdocs/data/FULL/data/",
+                "/home/egor/Repositories/hlcupdocs/data/TRAIN/data/",
                 4);
         // Testing
 

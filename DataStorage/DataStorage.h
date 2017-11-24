@@ -68,7 +68,7 @@ public:
         Id id;
         Timestamp from_date = std::numeric_limits<Timestamp>::min();
         Timestamp to_date = std::numeric_limits<Timestamp>::max();
-        std::string country = "";
+        std::string country;
         Distance to_distance = std::numeric_limits<Distance>::max();
     };
 
@@ -127,9 +127,7 @@ public:
     AddEntityStatus AddLocation(
             Location&& location);
 
-    ///
     void DumpData() const;
-    ///
 
 private:
     void InitializeUsers(

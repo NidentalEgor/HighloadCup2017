@@ -4,7 +4,7 @@
 
 #include "DataTypes.h"
 
-class Identifiable
+struct Identifiable
 {
 public:
     Identifiable()
@@ -21,7 +21,6 @@ public:
         return id;
     };
 
-// protected:
 public:
     Id id;
 };

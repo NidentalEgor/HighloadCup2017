@@ -12,7 +12,7 @@
 #include "../Utils/Traceable.h"
 
 class HttpParser final
-    : public Traceable
+        : public Traceable
 {
 public:
     enum class HttpParserFlags

@@ -178,7 +178,6 @@ public:
             const char* message,
             const size_t message_size)
     {
-        // Trace("175...");
         Trace("message_size = {}", message_size);
         Trace("message = {}", message);
         HttpParser http_parser;
@@ -399,11 +398,6 @@ public:
 
                 Visit visit;
                 visit.id = id;
-
-                if (visit.id == 61127)
-                {
-                    Trace("visit.id == 29585");
-                }
 
                 EntitiesValidator entities_validator;
                 ENSURE_TRUE_OTHERWISE_RETURN(
@@ -733,8 +727,6 @@ public:
         acceptor_.bind(endpoint);
         acceptor_.listen();
         
-        Trace("707...");
-
         StartAccept();
         
         std::generate(
@@ -744,8 +736,6 @@ public:
                   &boost::make_shared<boost::thread, boost::function<void ()> const &>,
                   boost::function<void ()>(
                       boost::bind(&boost::asio::io_service::run, &io_service_))));
-
-        Trace("719...");
     }
                 
     ~EchoServer()
@@ -927,7 +917,6 @@ void FillAverageLocationMarkQuery(
             const char* message,
             const size_t message_size)
     {
-        // Trace("175...");
         HttpParser http_parser;
         // ENSURE_TRUE_OTHERWISE_RETURN(
         //         http_parser.ParseHttpRequest(
@@ -936,10 +925,6 @@ void FillAverageLocationMarkQuery(
         //         std::make_pair(
         //             RequestProcessingStatus::BadRequest,
         //             nullptr));
-
-        // TraceCharacters(
-        //         const_cast<char*>(message),
-        //         message_size);
 
         const auto parse_http_request_result =
                 http_parser.ParseHttpRequest(

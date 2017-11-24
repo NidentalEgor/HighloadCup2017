@@ -5,7 +5,7 @@
 #include <string>
 #include <memory>
 
-#include "rapidjson/document.h"
+#include "../../Submodules/rapidjson/include/rapidjson/document.h"
 
 #include "DataTypes.h"
 #include "Identifiable.h"

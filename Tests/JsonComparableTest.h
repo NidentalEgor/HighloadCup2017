@@ -4,8 +4,8 @@
 
 #include <string>
 
-#include "gtest/gtest.h"
-#include "rapidjson/document.h"
+#include "../Submodules/googletest/googletest/include/gtest/gtest.h"
+#include "../Submodules/rapidjson/include/rapidjson/document.h"
 
 class JsonComparableTest
 {
