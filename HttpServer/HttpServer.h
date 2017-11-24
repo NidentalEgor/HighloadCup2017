@@ -331,7 +331,7 @@ public:
                         http_parser.GetBodyContent();
 
                 User user;
-                user.id_ = id;
+                user.id = id;
 
                 EntitiesValidator entities_validator;
                 ENSURE_TRUE_OTHERWISE_RETURN(
@@ -398,11 +398,11 @@ public:
                         http_parser.GetBodyContent();
 
                 Visit visit;
-                visit.id_ = id;
+                visit.id = id;
 
-                if (visit.id_ == 61127)
+                if (visit.id == 61127)
                 {
-                    Trace("visit.id_ == 29585");
+                    Trace("visit.id == 29585");
                 }
 
                 EntitiesValidator entities_validator;
@@ -460,7 +460,7 @@ public:
                         http_parser.GetBodyContent();
 
                 Location location;
-                location.id_ = id;
+                location.id = id;
 
                 EntitiesValidator entities_validator;
                 ENSURE_TRUE_OTHERWISE_RETURN(
@@ -1079,7 +1079,7 @@ void FillAverageLocationMarkQuery(
                         http_parser.GetBodyContent();
 
                 User user;
-                user.id_ = id;
+                user.id = id;
 
                 EntitiesValidator entities_validator;
                 ENSURE_TRUE_OTHERWISE_RETURN(
@@ -1146,7 +1146,7 @@ void FillAverageLocationMarkQuery(
                         http_parser.GetBodyContent();
 
                 Visit visit;
-                visit.id_ = id;
+                visit.id = id;
 
                 EntitiesValidator entities_validator;
                 ENSURE_TRUE_OTHERWISE_RETURN(
@@ -1203,7 +1203,7 @@ void FillAverageLocationMarkQuery(
                         http_parser.GetBodyContent();
 
                 Location location;
-                location.id_ = id;
+                location.id = id;
 
                 EntitiesValidator entities_validator;
                 ENSURE_TRUE_OTHERWISE_RETURN(

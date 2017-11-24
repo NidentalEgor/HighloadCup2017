@@ -31,7 +31,7 @@ Location::Location()
 void Location::Deserialize(
         const rapidjson::Value& location_element)
 {
-    id_ = location_element["id"].GetInt();
+    id = location_element["id"].GetInt();
     place = location_element["place"].GetString();
     country = location_element["country"].GetString();
     city = location_element["city"].GetString();
@@ -41,7 +41,7 @@ void Location::Deserialize(
 std::unique_ptr<std::string> Location::Serialize() const
 {
     std::stringstream str;
-    str << "{\"id\":" << id_ <<
+    str << "{\"id\":" << id <<
             ",\"place\":\"" << place <<
             "\",\"country\":\"" << country <<
             "\",\"city\":\"" << city <<

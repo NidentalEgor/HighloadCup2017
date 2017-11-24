@@ -12,18 +12,18 @@ public:
     }
 
     Identifiable(const Id id)
-        : id_(id)
+        : id(id)
     {
     }
 
     Id GetId()
     {
-        return id_;
+        return id;
     };
 
 // protected:
 public:
-    Id id_;
+    Id id;
 };
 
 #endif // IDENTIFIABLE_H_INCLUDED

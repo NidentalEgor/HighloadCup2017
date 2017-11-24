@@ -33,7 +33,7 @@ User::User(
 void User::Deserialize(
         const rapidjson::Value& user_element)
 {
-    id_ = user_element["id"].GetInt();
+    id = user_element["id"].GetInt();
     email = user_element["email"].GetString();
     first_name = user_element["first_name"].GetString();
     last_name = user_element["last_name"].GetString();
@@ -50,7 +50,7 @@ std::unique_ptr<std::string> User::Serialize() const
 
     std::string user_gender = gender == Gender::Male ? "m" : "f";
 
-    str << "{\"id\":" << id_ <<
+    str << "{\"id\":" << id <<
             ",\"email\":\"" << email <<
             "\",\"first_name\":\"" << first_name <<
             "\",\"last_name\":\"" << last_name <<

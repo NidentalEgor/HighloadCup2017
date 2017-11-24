@@ -30,7 +30,7 @@ Visit::Visit()
 void Visit::Deserialize(
         const rapidjson::Value& visit_element)
 {
-    id_ = visit_element["id"].GetInt();
+    id = visit_element["id"].GetInt();
     location_id = visit_element["location"].GetInt();
     user_id = visit_element["user"].GetInt();
     visited_at = visit_element["visited_at"].GetInt();
@@ -41,7 +41,7 @@ std::unique_ptr<std::string> Visit::Serialize() const
 {
     std::stringstream str;
     
-    str << "{\"id\":" << id_ <<
+    str << "{\"id\":" << id <<
             ",\"location\":" << location_id <<
             ",\"user\":" << user_id <<
             ",\"visited_at\":" << visited_at <<

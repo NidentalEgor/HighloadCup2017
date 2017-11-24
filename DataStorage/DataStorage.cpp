@@ -586,11 +586,11 @@ DataStorage::UpdateEntityStatus DataStorage::UpdateUser(
 //     return UpdateEntity<User>(user, users_);
 
     ENSURE_TRUE_OTHERWISE_RETURN(
-            users_.find(user.id_) != users_.end(),
+            users_.find(user.id) != users_.end(),
             UpdateEntityStatus::EntityNotFound)
 
     auto& user_to_update =
-                users_[user.id_];
+                users_[user.id];
 
     if (!user.email.empty())
     {
@@ -633,11 +633,11 @@ DataStorage::UpdateEntityStatus DataStorage::UpdateVisit(
     auto visit = visit1;
 
     ENSURE_TRUE_OTHERWISE_RETURN(
-            visits_.find(visit.id_) != visits_.end(),
+            visits_.find(visit.id) != visits_.end(),
             UpdateEntityStatus::EntityNotFound);
 
     // dirty hack
-    auto& visit_to_update = visits_[visit.id_];
+    auto& visit_to_update = visits_[visit.id];
     if (visit.location_id == std::numeric_limits<Id>::max())
     {
         visit.location_id = visit_to_update.location_id;
@@ -657,26 +657,26 @@ DataStorage::UpdateEntityStatus DataStorage::UpdateVisit(
     {
         visit.mark = visit_to_update.mark;
     }
-    visits_[visit.id_] = visit;
+    visits_[visit.id] = visit;
     // dirty hack
 
     const auto visit_id_to_location =
-            visits_to_locations_.find(visit.id_);
+            visits_to_locations_.find(visit.id);
     ENSURE_TRUE_OTHERWISE_RETURN(
             visit_id_to_location != visits_to_locations_.end(),
             UpdateEntityStatus::EntityNotFound); // ???
-    visits_to_locations_[visit.id_] = visit.location_id;
+    visits_to_locations_[visit.id] = visit.location_id;
 
     const auto visit_id_to_user =
-            visits_to_user_.find(visit.id_);
+            visits_to_user_.find(visit.id);
     ENSURE_TRUE_OTHERWISE_RETURN(
             visit_id_to_user != visits_to_user_.end(),
             UpdateEntityStatus::EntityNotFound); // ???
-    visits_to_user_[visit.id_] = visit.user_id;
+    visits_to_user_[visit.id] = visit.user_id;
 
     ///
     const auto current_visit =
-            visits_.find(visit.id_);
+            visits_.find(visit.id);
 
     ENSURE_TRUE_OTHERWISE_RETURN(
             current_visit != visits_.end(),
@@ -698,7 +698,7 @@ DataStorage::UpdateEntityStatus DataStorage::UpdateVisit(
         
         users_to_visits_[visit.user_id].emplace(
                 visit.visited_at,
-                visit.id_);
+                visit.id);
     }
     else
     {
@@ -735,7 +735,7 @@ DataStorage::UpdateEntityStatus DataStorage::UpdateVisit(
 
     locations_to_visits_[visit.location_id].emplace(
             visit.visited_at,
-            visit.id_);
+            visit.id);
     
     const auto location_idto_users =
             locations_to_users_.find(current_visit->second.location_id);
@@ -765,11 +765,11 @@ DataStorage::UpdateEntityStatus DataStorage::UpdateLocation(
 //     return UpdateEntity<Location>(location, locations_);
 
     ENSURE_TRUE_OTHERWISE_RETURN(
-            locations_.find(location.id_) != locations_.end(),
+            locations_.find(location.id) != locations_.end(),
             UpdateEntityStatus::EntityNotFound)
 
     auto& location_to_update =
-                locations_[location.id_];
+                locations_[location.id];
 
     if (location.distance != std::numeric_limits<uint64_t>::min())
     {
@@ -800,7 +800,7 @@ DataStorage::UpdateEntityStatus DataStorage::UpdateEntity(
         Container<T>& entities)
 {
     std::cout << "DataStorage::UpdateEntity" << std::endl;
-    const auto entity_to_update = entities.find(entity.id_);
+    const auto entity_to_update = entities.find(entity.id);
     std::cout << "DataStorage::UpdateEntity 2" << std::endl;
 
     ENSURE_TRUE_OTHERWISE_RETURN(
@@ -808,7 +808,7 @@ DataStorage::UpdateEntityStatus DataStorage::UpdateEntity(
             UpdateEntityStatus::EntityNotFound)
 
     std::cout << "DataStorage::UpdateEntity 3" << std::endl;
-    entities[entity.id_] = entity;
+    entities[entity.id] = entity;
 
     return UpdateEntityStatus::EntitySuccessfullyUpdated;
 }
@@ -817,20 +817,20 @@ DataStorage::AddEntityStatus DataStorage::AddUser(
         User&& user)
 {
     ENSURE_TRUE_OTHERWISE_RETURN(
-            users_.find(user.id_) == users_.end(),
+            users_.find(user.id) == users_.end(),
             DataStorage::AddEntityStatus::EntityAlreadyExist);
 
-    users_.emplace(user.id_, user);
+    users_.emplace(user.id, user);
 
     // May be, it is not necessary
 
     // const auto user_id_to_visits =
-    //         users_to_visits_.find(user.id_);
+    //         users_to_visits_.find(user.id);
     // if (user_id_to_visits == users_to_visits_.end())
     // {
     //     users_to_visits_.emplace(
-    //             user.id_,
-    //             TimestampToId{ {user.birth_date_, user.id_} });
+    //             user.id,
+    //             TimestampToId{ {user.birth_date_, user.id} });
         
     // }
     // else
@@ -847,16 +847,16 @@ DataStorage::AddEntityStatus DataStorage::AddVisit(
         Visit&& visit)
 {
     ENSURE_TRUE_OTHERWISE_RETURN(
-            visits_.find(visit.id_) == visits_.end(),
+            visits_.find(visit.id) == visits_.end(),
             DataStorage::AddEntityStatus::EntityAlreadyExist);
 
-    visits_.emplace(visit.id_, visit);
+    visits_.emplace(visit.id, visit);
 
     visits_to_user_.emplace(
-            visit.id_,
+            visit.id,
             visit.user_id);
     visits_to_locations_.emplace(
-            visit.id_,
+            visit.id,
             visit.location_id);
 
     const auto location_idto_visits =
@@ -865,13 +865,13 @@ DataStorage::AddEntityStatus DataStorage::AddVisit(
     {
         locations_to_visits_.emplace(
                 visit.location_id,
-                TimestampToId{ {visit.visited_at, visit.id_} });
+                TimestampToId{ {visit.visited_at, visit.id} });
     }
     else
     {
         location_idto_visits->second.emplace(
                 visit.visited_at,
-                visit.id_);
+                visit.id);
     }
 
     const auto user_id_to_visits =
@@ -880,7 +880,7 @@ DataStorage::AddEntityStatus DataStorage::AddVisit(
     {
         users_to_visits_.emplace(
                 visit.user_id,
-                TimestampToId{ {visit.visited_at, visit.id_} });
+                TimestampToId{ {visit.visited_at, visit.id} });
     }
     else
     {
@@ -888,7 +888,7 @@ DataStorage::AddEntityStatus DataStorage::AddVisit(
         // locations in same time/
         user_id_to_visits->second.emplace(
                 visit.visited_at,
-                visit.id_);
+                visit.id);
     }
 
     return AddEntityStatus::EntitySuccessfullyAdded;
@@ -898,16 +898,16 @@ DataStorage::AddEntityStatus DataStorage::AddLocation(
         Location&& location)
 {
     ENSURE_TRUE_OTHERWISE_RETURN(
-            locations_.find(location.id_) == locations_.end(),
+            locations_.find(location.id) == locations_.end(),
             DataStorage::AddEntityStatus::EntityAlreadyExist)
-    locations_.emplace(location.id_,location);
+    locations_.emplace(location.id,location);
 
     const auto location_idto_users =
-            locations_to_users_.find(location.id_);
+            locations_to_users_.find(location.id);
     if (location_idto_users == locations_to_users_.end())
     {
         locations_to_users_.emplace(
-                location.id_,
+                location.id,
                 std::multimap<Timestamp, Id>());
     }
     else
