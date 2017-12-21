@@ -1,5 +1,3 @@
-cmake_minimum_required(VERSION 3.5)
-
 file(GLOB DATA_STORAGE_SOURCES 
   ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/*.h

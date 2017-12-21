@@ -116,6 +116,7 @@ TEST_F(UpdateEntityTests, UpdateExistingVisitTest)
 
     const auto updated_visit = data_storage_.GetVisitById(entity_id);
     ASSERT_NE(updated_visit, nullptr);
+
     AssertEqualJsonDocuments(
             *updated_visit,
             R"({"user": 123, "location": 123, "visited_at": 123, "id": 1234, "mark": 123})");

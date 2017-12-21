@@ -1,7 +1,10 @@
 cmake_minimum_required (VERSION 3.5)
 project (HighloadCup2017)
 
-SET(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} "-std=c++14 -pthread -rdynamic")
+# only for gcc 
+# set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} "-std=c++14 -pthread -rdynamic")
+set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} "-std=c++14 -pthread")
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 set(Boost_USE_STATIC_LIBS off)
 set(Boost_USE_MULTITHREAD on)
@@ -21,12 +24,12 @@ add_subdirectory(Submodules)
 add_subdirectory(DataStorage)
 add_subdirectory(Tests)
 add_subdirectory(HttpParser)
-#add_subdirectory(DataExtracter)
+add_subdirectory(HttpServer)
 add_subdirectory(Utils)
 
 TARGET_LINK_LIBRARIES(Server
   DataStorage
   HttpParser
-  # DataExtracter
+  HttpServer
   Traceable
   ${BOOST_LIBS})

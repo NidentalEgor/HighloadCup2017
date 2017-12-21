@@ -30,12 +30,12 @@ public:
     Location();
 
     void Deserialize(
-            const rapidjson::Value& location_element) override final;
+            const rapidjson::Value& location_element) final;
 
-    std::unique_ptr<std::string> Serialize() const override final;
+    std::unique_ptr<std::string> Serialize() const final;
 
-    virtual bool Validate(
-            const char* content) const override;
+    bool Validate(
+            const char* content) const final;
 
 public:
     std::string place;

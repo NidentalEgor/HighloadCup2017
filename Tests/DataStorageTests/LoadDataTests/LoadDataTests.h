@@ -64,5 +64,5 @@ TEST_F(DataStorageLoadDataTest, BigDataTest)
     // record end time
     auto end = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double> diff = end - start;
-    std::cout << "Time: " << diff.count() << " s\n";
+    std::cout << "Time: " << diff.count() << " s" << std::endl;
 }

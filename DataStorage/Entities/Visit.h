@@ -27,12 +27,12 @@ public:
     Visit();
 
     void Deserialize(
-            const rapidjson::Value& visit_element) override final;
+            const rapidjson::Value& visit_element) final;
 
-    std::unique_ptr<std::string> Serialize() const override final;
+    std::unique_ptr<std::string> Serialize() const final;
 
     bool Validate(
-            const char* content) const override;
+            const char* content) const final;
 
 public:
     Id location_id;

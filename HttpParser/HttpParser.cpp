@@ -8,6 +8,8 @@
 #include "../Utils/Macroses.h"
 #include "HttpParser.h"
 
+const size_t HttpParser::MAX_PATH_SIZE = 10;
+
 int HttpParser::OnUrl(
         http_parser* parser,
         const char* position,
@@ -37,14 +39,26 @@ int HttpParser::OnBody(
 }
 
 HttpParser::HttpParser()
-    : request_type_(RequestType::None)
+    : parser_(std::make_unique<http_parser>())
+    , request_type_(RequestType::None)
+    , entity_id_(std::numeric_limits<Id>::max())
+    , from_date_(std::numeric_limits<Timestamp>::min())
+    , to_date_(std::numeric_limits<Timestamp>::max())
+    , from_age_(std::numeric_limits<Timestamp>::min())
+    , to_age_(std::numeric_limits<Timestamp>::max())
+    , gender_(Gender::Any)
+    , country_()
+    , to_distance_(std::numeric_limits<Distance>::max())
+    , additional_info_mask_(0)
+    , entity_content_()
+    , http_data_()
+    , current_request_type_(HttpRequestType::HttpRequestTypeAny)
 {
-    parser_ = std::make_unique<http_parser>();
     http_parser_init(parser_.get(), HTTP_BOTH);
 
-    memset(&settings, 0, sizeof(settings));
-    settings.on_url = OnUrl;
-    settings.on_body = OnBody;
+    memset(&settings_, 0, sizeof(settings_));
+    settings_.on_url = OnUrl;
+    settings_.on_body = OnBody;
 }
 
 std::pair<bool, long long> HttpParser::StringToNumber(
@@ -371,7 +385,7 @@ HttpParser::ErrorType HttpParser::SplitQuery(
         {
             qs_decode(value);
 
-            country = value;
+            country_ = value;
             additional_info_mask_ |= static_cast<int>(HttpParserFlags::CountryFlag);
         }
     }
@@ -412,7 +426,7 @@ HttpParser::ErrorType HttpParser::ParseHttpRequest(
         parser_->data = &http_data_;
         const int nparsed = http_parser_execute(
                 parser_.get(),
-                &settings,
+                &settings_,
                 request_local,
                 readed);
 
@@ -450,14 +464,7 @@ HttpParser::ErrorType HttpParser::ParseHttpRequest(
     for (size_t i = 0; i < http_data_.url_length; ++i)
     {
         max_path[i] = http_data_.url[i];
-    #ifdef DEBUG_LOG
-        std::cout << *(http_data_.url + i);
-    #endif
     }
-
-    #ifdef DEBUG_LOG
-    std::cout << std::endl;
-    #endif
 
     // Not for debug trace!!!
 
@@ -482,6 +489,9 @@ HttpParser::ErrorType HttpParser::ParseHttpRequest(
         printf("\tfragment:\t%s\n", url.fragment);
 #endif
 // temp
+#ifdef DEBUG_LOG
+        printf("before yuarel_split_path\n"); 
+#endif
 
         char* parts[MAX_PATH_SIZE];
         auto path_parts_amount = yuarel_split_path(
@@ -489,11 +499,22 @@ HttpParser::ErrorType HttpParser::ParseHttpRequest(
                 parts,
                 MAX_PATH_SIZE);
 
+#ifdef DEBUG_LOG
+        printf("after yuarel_split_path\n");
+        printf("path_parts_amount = %d\n", path_parts_amount);
+#endif
+
         if (url.query)
         {
+#ifdef DEBUG_LOG
+        printf("before SplitQuery\n");
+#endif
             const auto query_split_result =
                     SplitQuery(url.query);
-
+#ifdef DEBUG_LOG
+        printf("after SplitQuery\n");
+        printf("query_split_result = %d\n", static_cast<int>(query_split_result));
+#endif
             ENSURE_TRUE_OTHERWISE_RETURN(
                     query_split_result == HttpParser::ErrorType::ErrorTypeOk,
                     query_split_result);

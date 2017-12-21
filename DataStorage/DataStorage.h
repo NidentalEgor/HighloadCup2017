@@ -8,12 +8,11 @@
 #include <memory>
 #include <limits>
 
+#include "../Utils/Traceable.h"
 #include "Entities/DataTypes.h"
 #include "Entities/Location.h"
-#include "Entities/User.h"
 #include "Entities/Visit.h"
-#include "Entities/DataTypes.h"
-#include "../Utils/Traceable.h"
+#include "Entities/User.h"
 
 class DataStorage final
         : public Traceable
@@ -103,11 +102,19 @@ public:
     std::unique_ptr<std::string> GetVisitById(
             const Id visit_id) const;
 
+    template <typename T>        
+    std::unique_ptr<std::string> GetEntityById(
+            const Id entity_id);
+
     std::unique_ptr<std::string> GetVisistsByUserId(
             const GetVisistsByUserIdQuery& query_description) const;
 
     std::unique_ptr<std::string> GetAverageLocationMark(
             const GetAverageLocationMarkQuery query_description) const;
+
+    template<typename T>
+    UpdateEntityStatus UpdateEntity(
+            const T& entity);
 
     UpdateEntityStatus UpdateUser(
             const User& user);
@@ -127,6 +134,10 @@ public:
     AddEntityStatus AddLocation(
             Location&& location);
 
+    template<typename T>
+    AddEntityStatus AddEntity(
+            T&& entity);
+
     void DumpData() const;
 
 private:
@@ -142,17 +153,12 @@ private:
     void MapEntities();
 
     Timestamp GetBoundaryBirthDate(
-            const short age) const;
+            const Age age) const;
 
     template <typename T>
     std::unique_ptr<std::string> GetEntityById(
             const Id entity_id,
             const Container<T>& entities) const;
-
-    template <typename T>
-    DataStorage::UpdateEntityStatus UpdateEntity(
-            const T& entity,
-            Container<T>& entities);
 
     template <typename T>
     void ParseFile(

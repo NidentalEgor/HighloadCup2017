@@ -10,9 +10,7 @@
 class ISerializable
 {
 public:
-    virtual ~ISerializable()
-    {
-    };
+    virtual ~ISerializable() = default;
 
     virtual std::unique_ptr<std::string> Serialize() const = 0;
 };

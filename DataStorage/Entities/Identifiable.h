@@ -7,10 +7,6 @@
 struct Identifiable
 {
 public:
-    Identifiable()
-    {
-    }
-
     Identifiable(const Id id)
         : id(id)
     {

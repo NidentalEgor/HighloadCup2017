@@ -5,6 +5,8 @@
 class IValidateable
 {
 public:
+    virtual ~IValidateable() = default;
+
     virtual bool Validate(
             const std::string& content) const final
     {

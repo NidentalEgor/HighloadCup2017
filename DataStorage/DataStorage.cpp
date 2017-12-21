@@ -1,16 +1,21 @@
 #include <dirent.h>
-#include <iostream>
 #include <sstream>
 #include <iomanip>
-#include <stdio.h>
-#include <stdlib.h>
-
-#include "../Utils/Macroses.h"
-#include "DataStorage.h"
 
 #include "../Submodules/rapidjson/include/rapidjson/document.h"
 #include "../Submodules/rapidjson/include/rapidjson/filereadstream.h"
 #include "../Submodules/zipper/zipper/unzipper.h"
+
+#include "../Utils/Macroses.h"
+#include "DataStorage.h"
+
+namespace
+{
+
+template<typename T>
+struct AlwaysFalse : std::false_type {};
+
+} // namespace
 
 void DataStorage::LoadData(const std::string& folder_path)
 {
@@ -60,12 +65,27 @@ std::vector<std::string> FileNames(
         const std::string& data_name,
         const std::string& pattern)
 {
+    // zipper::Unzipper unzipper(data_name);
+    // std::vector<zipper::ZipEntry> entries = unzipper.entries();
+    // std::vector<std::string> names;
+    // for (auto& e : entries)
+    // {
+    //     if (e.name.find(std::string("data/FULL/data/") + pattern) == 0)
+    //     {
+    //         names.push_back(e.name);
+    //     }
+    // }
+
+    // unzipper.close();
+
+    // return std::move(names);
+
     zipper::Unzipper unzipper(data_name);
     std::vector<zipper::ZipEntry> entries = unzipper.entries();
     std::vector<std::string> names;
-    for (auto& e : entries)
+    for (const auto& e : entries)
     {
-        if (e.name.find(std::string("data/FULL/data/") + pattern) == 0)
+        if (e.name.find(pattern) == 0)
         {
             names.push_back(e.name);
         }
@@ -73,7 +93,7 @@ std::vector<std::string> FileNames(
 
     unzipper.close();
 
-    return std::move(names);
+    return names;
 }
 
 std::vector<unsigned char> GetFileContent(
@@ -97,10 +117,11 @@ void DataStorage::InitializeUsers(
   
   for (const auto& name : file_names)
   {
+    Trace("Users file name = {}", name);
     std::vector<unsigned char> buffer =
             GetFileContent(path_to_zipped_data, name);
     rapidjson::Document d;
-    d.Parse((char*)buffer.data(), buffer.size());
+    d.Parse(reinterpret_cast<char*>(buffer.data()), buffer.size());
     rapidjson::Value& users = d["users"];
 
     for (auto& u : users.GetArray())
@@ -124,7 +145,7 @@ void DataStorage::InitializeLocations(
         std::vector<unsigned char> buffer =
                 GetFileContent(path_to_zipped_data, name);
         rapidjson::Document d;
-        d.Parse((char*)buffer.data(), buffer.size());
+        d.Parse(reinterpret_cast<char*>(buffer.data()), buffer.size());
         rapidjson::Value& locations = d["locations"];
 
         for (auto& l : locations.GetArray())
@@ -148,10 +169,10 @@ void DataStorage::InitializeVisits(
         std::vector<unsigned char> buffer =
                 GetFileContent(path_to_zipped_data, name);
         rapidjson::Document d;
-        d.Parse((char*)buffer.data(), buffer.size());
+        d.Parse(reinterpret_cast<char*>(buffer.data()), buffer.size());
         rapidjson::Value& visits = d["visits"];
 
-        for (auto& v : visits.GetArray())
+        for (const auto& v : visits.GetArray())
         {
             Visit visit;
             visit.Deserialize(v);
@@ -169,7 +190,7 @@ void DataStorage::LoadZippedData(
 
     MapEntities();
 
-    DumpData();
+    // DumpData();
 }
 
 template <typename T>
@@ -249,6 +270,36 @@ std::unique_ptr<std::string> DataStorage::GetVisitById(
     return GetEntityById<Visit>(visit_id, visits_);
 }
 
+template <typename T>        
+std::unique_ptr<std::string> DataStorage::GetEntityById(
+        const Id entity_id)
+{
+    static_assert(
+            AlwaysFalse<T>::value,
+            "DataStorage::GetEntityById: unknown type.");
+}
+
+template <>
+std::unique_ptr<std::string> DataStorage::GetEntityById<User>(
+        const Id entity_id)
+{
+    return GetEntityById<User>(entity_id, users_);
+}
+
+template <>
+std::unique_ptr<std::string> DataStorage::GetEntityById<Location>(
+        const Id entity_id)
+{
+    return GetEntityById<Location>(entity_id, locations_);
+}
+
+template <>
+std::unique_ptr<std::string> DataStorage::GetEntityById<Visit>(
+        const Id entity_id)
+{
+    return GetEntityById<Visit>(entity_id, visits_);
+}
+
 template <typename T>
 std::unique_ptr<std::string> DataStorage::GetEntityById(
         const Id entity_id,
@@ -306,6 +357,10 @@ void DataStorage::EraseByToDistance(
 
         const auto location =
                 locations_.find(visit_id_to_location_id->second);
+
+        ENSURE_TRUE_OTHERWISE_CONTINUE(
+                location != locations_.end());
+
         if (location->second.distance >= to_distance)
         {
             visit_description = visits.erase(visit_description);
@@ -567,15 +622,45 @@ std::unique_ptr<std::string> DataStorage::GetAverageLocationMark(
 }
 
 Timestamp DataStorage::GetBoundaryBirthDate(
-        const short age) const
+        const Age age) const
 {
-    static time_t now_epoch_time = time(NULL);
+    static time_t now_epoch_time = time(nullptr);
     static struct tm* now_time = gmtime(&now_epoch_time);
     auto birth_date = *now_time;
     birth_date.tm_year -= age;
     time_t birth_date_epoch = mktime(&birth_date);
 
     return birth_date_epoch;
+}
+
+template<typename T>
+DataStorage::UpdateEntityStatus DataStorage::UpdateEntity(
+        const T& entity)
+{
+    static_assert(
+            AlwaysFalse<T>::value,
+            "DataStorage::UpdateEntity: unknown type.");
+}
+
+template<>
+DataStorage::UpdateEntityStatus DataStorage::UpdateEntity<User>(
+        const User& user)
+{
+    return UpdateUser(user);
+}
+
+template<>
+DataStorage::UpdateEntityStatus DataStorage::UpdateEntity<Location>(
+        const Location& location)
+{
+    return UpdateLocation(location);
+}
+
+template<>
+DataStorage::UpdateEntityStatus DataStorage::UpdateEntity<Visit>(
+        const Visit& visit)
+{
+    return UpdateVisit(visit);
 }
 
 DataStorage::UpdateEntityStatus DataStorage::UpdateUser(
@@ -656,7 +741,7 @@ DataStorage::UpdateEntityStatus DataStorage::UpdateVisit(
     {
         visit.mark = visit_to_update.mark;
     }
-    visits_[visit.id] = visit;
+    // visits_[visit.id] = visit; // move to the end
     // dirty hack
 
     const auto visit_id_to_location =
@@ -686,11 +771,19 @@ DataStorage::UpdateEntityStatus DataStorage::UpdateVisit(
         const auto user_id_to_visits =
                 users_to_visits_.find(
                     current_visit->second.user_id);
-        // ENSURE
+
+        ENSURE_TRUE_OTHERWISE_RETURN(
+                user_id_to_visits != users_to_visits_.end(),
+                DataStorage::UpdateEntityStatus::EntityNotFound);
+
         const auto element_to_erase =
                 user_id_to_visits->second.find(
                     current_visit->second.visited_at);
-        //ENSURE
+        
+        ENSURE_TRUE_OTHERWISE_RETURN(
+                element_to_erase != user_id_to_visits->second.end(),
+                DataStorage::UpdateEntityStatus::EntityNotFound);
+
         user_id_to_visits->second.erase(
                 // current_visit->second.visited_at);
                 element_to_erase);
@@ -709,10 +802,15 @@ DataStorage::UpdateEntityStatus DataStorage::UpdateVisit(
                 current_visit->second.location_id);
     ENSURE_TRUE_OTHERWISE_RETURN(
             location_idto_visits != locations_to_visits_.end(),
-            UpdateEntityStatus::EntityNotFound);
-//     location_idto_visits->second.erase(
-//             location_idto_visits->second.find(
-//                 current_visit->second.visited_at));
+            UpdateEntityStatus::EntityNotFound); // if no locations yet
+
+    // ENSURE_TRUE_OTHERWISE_RETURN(
+    //         location_idto_visits != locations_to_visits_.end(),
+    //         UpdateEntityStatus::EntitySuccessfullyUpdated); // if no locations yet
+
+    //     location_idto_visits->second.erase(
+    //             location_idto_visits->second.find(
+    //                 current_visit->second.visited_at));
 
     const auto good_visits =
             location_idto_visits->second.equal_range(
@@ -750,10 +848,10 @@ DataStorage::UpdateEntityStatus DataStorage::UpdateVisit(
     }
     else
     {
-        // DebugTrace("if not (user != users_.end())");
     }
     
-    // return UpdateEntity<Visit>(visit, visits_);
+    visits_[visit.id] = visit;
+
     return DataStorage::UpdateEntityStatus::EntitySuccessfullyUpdated;
 }
 
@@ -761,8 +859,6 @@ DataStorage::UpdateEntityStatus DataStorage::UpdateLocation(
         const Location& location)
 {
     // May I recalc something?
-//     return UpdateEntity<Location>(location, locations_);
-
     ENSURE_TRUE_OTHERWISE_RETURN(
             locations_.find(location.id) != locations_.end(),
             UpdateEntityStatus::EntityNotFound)
@@ -789,25 +885,6 @@ DataStorage::UpdateEntityStatus DataStorage::UpdateLocation(
     {
         location_to_update.city = location.city;
     }
-
-    return UpdateEntityStatus::EntitySuccessfullyUpdated;
-}
-
-template <typename T>
-DataStorage::UpdateEntityStatus DataStorage::UpdateEntity(
-        const T& entity,
-        Container<T>& entities)
-{
-    std::cout << "DataStorage::UpdateEntity" << std::endl;
-    const auto entity_to_update = entities.find(entity.id);
-    std::cout << "DataStorage::UpdateEntity 2" << std::endl;
-
-    ENSURE_TRUE_OTHERWISE_RETURN(
-            entity_to_update != entities.end(),
-            UpdateEntityStatus::EntityNotFound)
-
-    std::cout << "DataStorage::UpdateEntity 3" << std::endl;
-    entities[entity.id] = entity;
 
     return UpdateEntityStatus::EntitySuccessfullyUpdated;
 }
@@ -884,7 +961,7 @@ DataStorage::AddEntityStatus DataStorage::AddVisit(
     else
     {
         // Try to add enywhere - user can not be in two
-        // locations in same time/
+        // locations in same time
         user_id_to_visits->second.emplace(
                 visit.visited_at,
                 visit.id);
@@ -917,6 +994,36 @@ DataStorage::AddEntityStatus DataStorage::AddLocation(
     }
 
     return DataStorage::AddEntityStatus::EntitySuccessfullyAdded;
+}
+
+template<typename T>
+DataStorage::AddEntityStatus DataStorage::AddEntity(
+        T&& entity)
+{
+    static_assert(
+            AlwaysFalse<T>::value,
+            "DataStorage::AddEntity: unknown type.");
+}
+
+template<>
+DataStorage::AddEntityStatus DataStorage::AddEntity<User>(
+        User&& entity)
+{
+    return AddUser(std::forward<User>(entity));
+}
+
+template<>
+DataStorage::AddEntityStatus DataStorage::AddEntity<Location>(
+        Location&& entity)
+{
+    return AddLocation(std::forward<Location>(entity));
+}
+
+template<>
+DataStorage::AddEntityStatus DataStorage::AddEntity<Visit>(
+        Visit&& entity)
+{
+    return AddVisit(std::forward<Visit>(entity));
 }
 
 ///

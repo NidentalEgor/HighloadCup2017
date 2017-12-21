@@ -63,12 +63,12 @@ TEST_F(GetVisitsByUserIdTests, ThreeOfFourVisitsDueToFromDateTest)
     const auto visits = data_storage_.GetVisistsByUserId(query); // Boundary case.
 
     ASSERT_NE(visits, nullptr);
-    
+
     AssertEqualJsonDocuments(
             *visits,
-            R"({"visits": [{"user": 27, "location": 22, "visited_at": 1049447317, "id": 4, "mark": 4},)"
-            R"({"user": 27, "location": 22, "visited_at": 1049447317, "id": 2, "mark": 4},)"
-            R"({"user": 27, "location": 22, "visited_at": 1049447318, "id": 3, "mark": 4}]})");
+            R"({"visits": [{"place": "Поместье", "visited_at": 1049447317, "mark": 4},)"
+            R"({"place": "Поместье", "visited_at": 1049447317, "mark": 4},)"
+            R"({"place": "Поместье", "visited_at": 1049447318, "mark": 4}]})");
 }
 
 TEST_F(GetVisitsByUserIdTests, NoVisitsDueToToDateTest)
@@ -95,9 +95,9 @@ TEST_F(GetVisitsByUserIdTests, ThreeOfFourVisitsDueToToDateTest)
     
     AssertEqualJsonDocuments(
             *visits,
-            R"({"visits": [{"user": 27, "location": 22, "visited_at": 1049447316, "id": 1, "mark": 3},)"
-            R"({"user": 27, "location": 22, "visited_at": 1049447317, "id": 4, "mark": 4},)"
-            R"({"user": 27, "location": 22, "visited_at": 1049447317, "id": 2, "mark": 4}]})");
+            R"({"visits": [{"place": "Поместье", "visited_at": 1049447316, "mark": 3},)"
+            R"({"place": "Поместье", "visited_at": 1049447317, "mark": 4},)"
+            R"({"place": "Поместье", "visited_at": 1049447317, "mark": 4}]})");
 }
 
 TEST_F(GetVisitsByUserIdTests, NoVisitsDueToCountryTest)
@@ -124,8 +124,8 @@ TEST_F(GetVisitsByUserIdTests, TwoOfFourVisitsDueToCountryTest)
     
     AssertEqualJsonDocuments(
             *visits,
-            R"({"visits": [{"user": 27, "location": 22, "visited_at": 1049447316, "id": 1, "mark": 3},)"
-            R"({"user": 27, "location": 23, "visited_at": 1049447317, "id": 2, "mark": 4}]})");
+            R"({"visits": [{"place": "Поместье", "visited_at": 1049447316, "mark": 3},)"
+            R"({"place": "Поместье", "visited_at": 1049447317, "mark": 4}]})");
 }
 
 TEST_F(GetVisitsByUserIdTests, NoVisitsDueToToDistanceTest)
@@ -152,6 +152,6 @@ TEST_F(GetVisitsByUserIdTests, TwoOfFourVisitsDueToToDistanceTest)
     
     AssertEqualJsonDocuments(
             *visits,
-            R"({"visits": [{"user": 27, "location": 22, "visited_at": 1049447316, "id": 1, "mark": 3},)"
-            R"({"user": 27, "location": 23, "visited_at": 1049447317, "id": 2, "mark": 4}]})");
+            R"({"visits": [{"place": "Поместье", "visited_at": 1049447316, "mark": 3},)"
+            R"({"place": "Поместье", "visited_at": 1049447317, "mark": 4}]})");
 }

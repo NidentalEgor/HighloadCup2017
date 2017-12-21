@@ -25,6 +25,7 @@ public:
                         DataStorage::GetVisistsByUserIdQuery(1));
 
             ASSERT_NE(visits, nullptr);
+
             AssertEqualJsonDocuments(
                     *visits,
                     visits_of_first_user);
@@ -78,8 +79,8 @@ TEST_F(DataStorageComplexTest, CheckVisitsByUserIdAfterVisitAddTest)
         ASSERT_NE(visits, nullptr);
         AssertEqualJsonDocuments(
                 *visits,
-                R"({"visits": [{"user": 1, "location": 22, "visited_at": 1049447314, "id": 1, "mark": 3},
-                {"user": 1, "location": 22, "visited_at": 1049447316, "id": 2, "mark": 4}]})");
+                R"({"visits": [{"place": "Поместье", "visited_at": 1049447314, "mark": 3},
+                {"place": "Поместье", "visited_at": 1049447316, "mark": 4}]})");
     }
 
     data_storage_.AddVisit(
@@ -93,9 +94,9 @@ TEST_F(DataStorageComplexTest, CheckVisitsByUserIdAfterVisitAddTest)
         ASSERT_NE(visits, nullptr);
         AssertEqualJsonDocuments(
                 *visits,
-                R"({"visits": [{"user": 1, "location": 22, "visited_at": 123, "id": 3, "mark": 4},
-                {"user": 1, "location": 22, "visited_at": 1049447314, "id": 1, "mark": 3},
-                {"user": 1, "location": 22, "visited_at": 1049447316, "id": 2, "mark": 4}]})");
+                R"({"visits": [{"place": "Поместье", "visited_at": 123, "mark": 4},
+                {"place": "Поместье", "visited_at": 1049447314, "mark": 3},
+                {"place": "Поместье", "visited_at": 1049447316, "mark": 4}]})");
     }
 }
 
@@ -130,16 +131,16 @@ TEST_F(DataStorageComplexTest, CheckVisitsByUserIdAfterVisitUpdateTest)
 
     CheckVisits(
             R"({"visits": 
-                [{"user": 1, "location": 1, "visited_at": 1049447314, "id": 1, "mark": 3},
-                {"user": 1, "location": 1, "visited_at": 1049447316, "id": 2, "mark": 4}]})",
+                [{"place": "Поместье", "visited_at": 1049447314, "mark": 3},
+                {"place": "Поместье", "visited_at": 1049447316, "mark": 4}]})",
             R"({"visits": []})");
 
     data_storage_.UpdateVisit(
             Visit(1, 22, 2, 123, 3));
 
     CheckVisits(
-            R"({"visits":[{"user":1,"location":1,"visited_at":1049447316,"id":2,"mark":4}]})",
-            R"({"visits":[{"user":2,"location":22,"visited_at":123,"id":1,"mark":3}]})");
+            R"({"visits":[{"place":"Поместье","visited_at":1049447316,"mark":4}]})",
+            R"({"visits":[{"place":"Поместье","visited_at":123,"mark":3}]})");
 }
 
 TEST_F(DataStorageComplexTest, CheckAverageLocationAfterVisitUpdateTest)

@@ -31,12 +31,12 @@ public:
         const Timestamp birth_date);
 
     void Deserialize(
-            const rapidjson::Value& user_element) override final;
+            const rapidjson::Value& user_element) final;
 
-    std::unique_ptr<std::string> Serialize() const override final;
+    std::unique_ptr<std::string> Serialize() const final;
 
-    virtual bool Validate(
-            const char* content) const override;
+    bool Validate(
+            const char* content) const final;
     
 public:
     std::string email;

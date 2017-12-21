@@ -48,7 +48,7 @@ std::unique_ptr<std::string> User::Serialize() const
 {
     std::stringstream str;
 
-    std::string user_gender = gender == Gender::Male ? "m" : "f";
+    std::string user_gender(gender == Gender::Male ? "m" : "f");
 
     str << "{\"id\":" << id <<
             ",\"email\":\"" << email <<

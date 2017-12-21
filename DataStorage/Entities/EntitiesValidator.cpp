@@ -5,7 +5,7 @@
 
 #include "EntitiesValidator.h"
 
-std::unordered_map<int, std::string> EntitiesValidator::entity_attribute_to_string
+/*const*/ std::unordered_map<int, std::string> EntitiesValidator::entity_attribute_to_string
 {
     { static_cast<int>(EntitiesValidator::EntityAttributes::Place),      "place"       },
     { static_cast<int>(EntitiesValidator::EntityAttributes::Country),    "country"     },
@@ -40,10 +40,8 @@ bool EntitiesValidator::CheckStringAttribute(
             attributes_mask_ |= static_cast<int>(attribute);
             return true;
         }
-        else
-        {
-            return false;
-        }
+
+        return false;
     }
     
     return true;
@@ -62,12 +60,10 @@ bool EntitiesValidator::CheckUint64Attribute(
             attributes_mask_ |= static_cast<int>(attribute);
             return true;
         }
-        else
-        {
-            return false;
-        }
+
+        return false;
     }
-    
+
     return true;
 }
 
@@ -84,10 +80,8 @@ bool EntitiesValidator::CheckInt64Attribute(
             attributes_mask_ |= static_cast<int>(attribute);
             return true;
         }
-        else
-        {
-            return false;
-        }
+
+        return false;
     }
     
     return true;

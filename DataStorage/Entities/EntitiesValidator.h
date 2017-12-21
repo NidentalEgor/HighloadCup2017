@@ -3,6 +3,7 @@
 #pragma once
 
 #include <string>
+#include <unordered_map>
 
 #include "../../Submodules/rapidjson/include/rapidjson/document.h"
 
@@ -30,7 +31,7 @@ public:
     EntitiesValidator();
 
     bool LocationDataForUpdate(
-            const char* data);
+            const char* content);
 
     bool VisitDataForUpdate(
         const char* content);
@@ -65,7 +66,7 @@ private:
 private:
     int attributes_mask_;
     rapidjson::Document json_content_;
-    static std::unordered_map<int, std::string> entity_attribute_to_string;
+    static /*const*/ std::unordered_map<int, std::string> entity_attribute_to_string;
 }; 
 
 #endif // ENTITIES_VALIDATOR_H_INCLUDED

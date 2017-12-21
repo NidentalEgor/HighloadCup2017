@@ -44,13 +44,14 @@ public:
 
     enum class ErrorType
     {
-        ErrorTypeOk,
+        ErrorTypeOk = 0,
         ErrorTypeBadRequest,
         ErrorTypeNotFound
     };
 
     enum class HttpRequestType
     {
+        HttpRequestTypeAny = 0,
         HttpRequestTypeGet,
         HttpRequestTypePost
     };
@@ -120,7 +121,7 @@ public:
 
     std::string GetCountry() const
     {
-        return country;
+        return country_;
     }
 
     Id GetToDistance() const
@@ -165,7 +166,6 @@ private:
 
 private:
     std::unique_ptr<http_parser> parser_;
-    http_parser_settings settings;
     RequestType request_type_;
     Id entity_id_;
     Timestamp from_date_;
@@ -173,13 +173,15 @@ private:
     Timestamp from_age_;
     Timestamp to_age_;
     Gender gender_;
-    std::string country;
-    Id to_distance_;
+    std::string country_;
+    Distance to_distance_;
     int additional_info_mask_;
     std::string entity_content_;
     HttpData http_data_;
-    size_t MAX_PATH_SIZE = 10;
     HttpRequestType current_request_type_;
+    http_parser_settings settings_;
+
+    static const size_t MAX_PATH_SIZE;
 };
 
 #endif // HTTP_PARSER_H_INCLUDED
