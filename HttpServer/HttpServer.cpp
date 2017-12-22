@@ -120,12 +120,13 @@ void DoJob(
 
 HttpServer::HttpServer(
         const std::string& ip_address,
-        const short port,
+        const uint16_t port,
         const LoadedDataType loaded_data_type,
         const std::string& loaded_data_path,
         const size_t threads_count)
     : ip_address_(ip_address)
     , port_(port)
+    , threads_count_(threads_count)
 {
     Trace("Data storage data loading...");
 
@@ -186,7 +187,7 @@ void HttpServer::Run()
     }
 
     std::vector<std::thread> threads;
-    for (size_t i = 0; i < 3; ++i)
+    for (size_t i = 0; i < threads_count_ - 1; ++i)
     {
         threads.emplace_back(DoJob, epollfd, request_processor_);
     }
@@ -195,7 +196,7 @@ void HttpServer::Run()
     int i = 1;
     while (true)
     {
-        int sock = accept(master_socket, NULL, NULL);
+        int sock = accept(master_socket, nullptr, nullptr);
         if (sock == -1) {
             perror("accept");
             exit(EXIT_FAILURE);
@@ -220,9 +221,9 @@ void HttpServer::Run()
         //         &event);
 
         setsockopt(sock, SOL_SOCKET, SO_SNDBUF,
-                   (void *)&new_buf_size, sizeof(new_buf_size));
+                   reinterpret_cast<void*>(&new_buf_size), sizeof(new_buf_size));
         setsockopt(sock, SOL_SOCKET, SO_RCVBUF,
-                   (void *)&new_buf_size, sizeof(new_buf_size));
+                   reinterpret_cast<void*>(&new_buf_size), sizeof(new_buf_size));
         setsockopt(sock, SOL_SOCKET, SO_DONTROUTE, (void *)&i, sizeof(i));
         // setsockopt(sock, IPPROTO_TCP, TCP_NODELAY, (void *)&i, sizeof(i));
         struct epoll_event ev;

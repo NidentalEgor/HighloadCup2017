@@ -19,7 +19,7 @@ public:
 
     HttpServer(
             const std::string& ip_address,
-            const short port,
+            const uint16_t port,
             const LoadedDataType loaded_data_type,
             const std::string& loaded_data_path,
             const size_t threads_count);
@@ -28,7 +28,8 @@ public:
 
 private:
     std::string ip_address_;
-    short port_;
+    uint16_t port_;
+    uint16_t threads_count_;
     std::shared_ptr<RequestProcessor> request_processor_;
 };
 

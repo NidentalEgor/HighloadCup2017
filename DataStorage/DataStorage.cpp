@@ -330,6 +330,10 @@ void DataStorage::EraseByCountry(
 
         const auto location =
                 locations_.find(visit_id_to_location_id->second);
+
+        ENSURE_TRUE_OTHERWISE_CONTINUE(
+            location != locations_.end());
+
         if (location->second.country != country)
         {
             visit_description = visits.erase(visit_description);

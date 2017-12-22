@@ -222,15 +222,15 @@ HttpParser::ErrorType HttpParser::Route(
                     }
                     else
                     {
-                        DebugTrace(__FILENAME__, __LINE__, R"(NOT if (strcmp(parts[1], "new") == 0))");
-                        if (parts[1])
-                        {
-                            DebugTrace(__FILENAME__, __LINE__, R"(parts[1] = {})", parts[1]);
-                        }
-                        else
-                        {
-                            DebugTrace(__FILENAME__, __LINE__, R"(parts!!!11)");
-                        }
+                        // DebugTrace(__FILENAME__, __LINE__, R"(NOT if (strcmp(parts[1], "new") == 0))");
+                        // if (parts[1])
+                        // {
+                        //     DebugTrace(__FILENAME__, __LINE__, R"(parts[1] = {})", parts[1]);
+                        // }
+                        // else
+                        // {
+                        //     DebugTrace(__FILENAME__, __LINE__, R"(parts!!!11)");
+                        // }
                         
                         const auto id =
                                 StringToNumber(parts[1]);
@@ -504,7 +504,7 @@ HttpParser::ErrorType HttpParser::ParseHttpRequest(
         printf("path_parts_amount = %d\n", path_parts_amount);
 #endif
 
-        if (url.query)
+        if (url.query != nullptr)
         {
 #ifdef DEBUG_LOG
         printf("before SplitQuery\n");
@@ -525,7 +525,7 @@ HttpParser::ErrorType HttpParser::ParseHttpRequest(
             DebugTrace("part[{}] = {}", i, parts[i]);
         }
       
-        if (http_data_.request.body)
+        if (http_data_.request.body != nullptr)
         {
             DebugTrace("Request body is not empty");
         }
