@@ -1,8 +1,6 @@
 Build
+build
 Submodules/rapidjson
 Submodules/googletest
 .vscode
 *.txt
-build/*
-data.zip
-

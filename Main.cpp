@@ -1,103 +1,108 @@
 #include <iostream>
 
+#include <boost/program_options.hpp>
+
 #include "HttpServer/HttpServer.h"
 
-int main()
+int main(int argc, char* argv[])
 {
+    std::cout << "Starting..." << std::endl;
+    
+    std::cout << "argc = " << argc << std::endl;
+    for (size_t i = 0; i < argc; ++i)
+    {
+        std::cout << "argv[" << i << "] = " << argv[i] << std::endl;
+    }
+
+    boost::program_options::options_description command_line_options_descriptions(
+        "Allowed options");
+
+    command_line_options_descriptions.add_options()
+        ("help,h", "show help")
+        ("ip", boost::program_options::value<std::string>()->required(), "ip address")
+        ("port", boost::program_options::value<uint16_t>()->required(), "port")
+        ("threads", boost::program_options::value<uint16_t>()->required(), "threads amount")
+        ("unzipped", "is input data unzipped")
+        ("input", boost::program_options::value<std::string>()->required(), "path to data")
+        ("local", "is launch at local pc");
+
+    boost::program_options::variables_map command_line_options;
+    store(
+        parse_command_line(
+            argc,
+            argv,
+            command_line_options_descriptions),
+        command_line_options);
+
     try
     {
+        bool is_data_unzipped = false;
+        bool is_local_launch = false;
+        std::string path_to_data("tmp/data/data.zip");
+        std::string ip_address("127.0.0.1");
+        uint16_t port = 80;
+        uint16_t threads_amount = 4;
+
+        if (command_line_options.count("help"))
+        {
+            std::cout << command_line_options_descriptions << std::endl;
+            return 0;
+        }
+
+        if (command_line_options.count("ip"))
+        {
+            ip_address =
+                command_line_options["ip"].as<std::string>();
+        }
+
+        if (command_line_options.count("port"))
+        {
+            port =
+                command_line_options["port"].as<uint16_t>();
+        }
+
+        if (command_line_options.count("threads"))
+        {
+            threads_amount =
+                command_line_options["threads"].as<uint16_t>();
+        }
+
+        if (command_line_options.count("unzipped"))
+        {
+            is_data_unzipped = true;
+        }
+
+        if (command_line_options.count("input"))
+        {
+            path_to_data =
+                command_line_options["input"].as<std::string>();
+        }
+        
+        if (command_line_options.count("local"))
+        {
+            is_local_launch = true;
+        }
+        
         HttpServer http_server(
-                "127.0.0.1",
-                1222,
-                HttpServer::LoadedDataType::Zipped,
-                // HttpServer::LoadedDataType::Unzipped,
-                // "/tmp/data/data.zip",
-                // "/home/egor/Repositories/highload_data_zip/data_train_good.zip",
-                // "/home/egor/Repositories/hlcupdocs/data/FULL/data/",
-                "/home/egor/Repositories/highload_data_zip/data_full.zip",
-                4);
+            ip_address,
+            port,
+            is_data_unzipped ? HttpServer::LoadedDataType::Unzipped : HttpServer::LoadedDataType::Zipped,
+            path_to_data,
+            threads_amount,
+            is_local_launch);
 
         http_server.Run();
     }
+    catch (const boost::program_options::error& program_options_error)
+    {
+        std::cerr << program_options_error.what() << std::endl;
+        std::cout << program_options_error.what() << std::endl;
+        return -1;
+    }
     catch (std::exception const &e)
     {
-        std::cout << "catch (std::exception const &e)" << std::endl;
         std::cerr << e.what() << std::endl;
+        std::cout << e.what() << std::endl;
+        return -1;
     }
 }
-
-// #include "HttpServer/HttpServerBoost.h"
-// #include "DataStorage/DataStorage.h"
-// #include "HttpParser/HttpParser.h"
-
-// int main(int argc, char* argv[])
-// {
-//     try
-//     {
-//         // For docker
-//         Network::EchoServer server(
-//                 "0.0.0.0",
-//                 "80",
-//                 Network::LoadedDataType::Zipped,
-//                 "/tmp/data/data.zip",
-//                 3);
-//         // For docker
-
-//         // Local network test
-//         // Network::EchoServer Srv("192.168.2.103", "5555", 4);
-//         // Local network test
-
-//         // Testing
-//         // data_storage_->LoadZippedData("/tmp/data/data.zip");
-//         // data_storage_->LoadZippedData("/HighloadCup2017/data.zip");
-//         // data_storage_->LoadZippedData("/home/egor/Repositories/highload_data_zip/data.zip");
-//         // data_storage_->LoadData("/home/egor/Repositories/hlcupdocs/data/TRAIN/data/");
-//         // data_storage_->LoadData("/home/egor/Repositories/hlcupdocs/data/FULL/data/");
-
-//         // Network::EchoServer server(
-//         //         "127.0.0.1",
-//         //         "5555",
-//         //         // Network::LoadedDataType::Unzipped,
-//         //         Network::LoadedDataType::Zipped,
-//         //         // "/home/egor/Repositories/highload_data_zip/data.zip",
-//         //         "/tmp/data/data.zip",
-//         //         // "/home/egor/Repositories/hlcupdocs/data/FULL/data/",
-//         //         // "/home/egor/Repositories/hlcupdocs/data/TRAIN/data/",
-//         //         4);
-//         // Testing
-
-//         std::cin.get();
-//     }
-//     catch (std::exception const &e)
-//     {
-//         std::cout << "catch (std::exception const &e)" << std::endl;
-//         std::cerr << e.what() << std::endl;
-//     }
-
-//     return 0;
-// }
-
-
-// int main(int argc, char* argv[])
-// {
-//   try
-//   {
-//     if (argc != 2)
-//     {
-//       std::cerr << "Usage: async_tcp_echo_server <port>\n";
-//       return 1;
-//     }
-
-//     boost::asio::io_service io_service;
-
-//     server s(io_service, std::atoi(argv[1]));
-
-//     io_service.run();
-//   }
-//   catch (std::exception& e)
-//   {
-//     std::cerr << "Exception: " << e.what() << "\n";
-//   }
-
-//   return 0;
-// }

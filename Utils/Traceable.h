@@ -101,7 +101,8 @@ public:
     static void Trace(
             const char* message)
     {
-        fmt::print("{}\n",message);
+        // fmt::print("{}\n",message);
+        std::cout << message << std::endl;
     }
 
     static void TraceCharacters(

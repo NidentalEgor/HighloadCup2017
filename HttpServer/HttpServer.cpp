@@ -15,6 +15,9 @@
 #include <sstream>
 
 #include "HttpServer.h"
+#include "../DataStorage/IDataStorage.h"
+#include "../DataStorage/DataStorage.h"
+#include "RequestProcessor.h"
 
 const size_t MAX_EVENTS = 1000;
 const size_t MAX_MESSAGE_SIZE = 2048;
@@ -36,19 +39,79 @@ int SetNonblock(const int fd)
 #endif
 }
 
+void DoJobTest(
+        const int epoll_fd,
+        const std::shared_ptr<IRequestProcessor>& request_processor)
+{
+    struct epoll_event events[MAX_EVENTS];
+
+    const int amount =
+            epoll_wait(epoll_fd, events, MAX_EVENTS, -1);
+
+    for (int index = 0; index < amount; ++index)
+    {
+        char buffer[MAX_MESSAGE_SIZE];
+        const int message_size =
+                recv(
+                    events[index].data.fd,
+                    buffer,
+                    1024,
+                    MSG_NOSIGNAL);
+
+        if (message_size > 0)
+        {
+            const auto result =
+                    request_processor->ProcessRequest(
+                        buffer,
+                        message_size);
+
+            if (result.first ==
+                RequestProcessor::RequestProcessingStatus::HttpParserUnknownRequestType)
+            {
+                // break;
+                continue;
+            }
+
+            send(
+                events[index].data.fd,
+                result.second->c_str(),
+                result.second->size() + 1,
+                MSG_NOSIGNAL);
+        }
+
+        shutdown(
+            events[index].data.fd,
+            SHUT_RDWR);
+
+        close(events[index].data.fd);
+    }
+}
+
 void DoJob(
         const int epoll_fd,
-        const std::shared_ptr<RequestProcessor>& request_processor)
+        const std::shared_ptr<IRequestProcessor>& request_processor)
 {
+    #ifdef DEBUG_LOG
+    std::cout << "DoJob in thread " << std::this_thread::get_id() << std::endl;
+    #endif
+
     struct epoll_event events[MAX_EVENTS];
 
     while (true)
     {
+        #ifdef DEBUG_LOG
+        std::cout << "DoJob while (true)" << std::endl;
+        #endif
+
         const int amount =
                 epoll_wait(epoll_fd, events, MAX_EVENTS, -1);
 
         for (int index = 0; index < amount; ++index)
         {
+            #ifdef DEBUG_LOG
+            std::cout << "DoJob for loop" << std::endl;
+            #endif
+
             char buffer[MAX_MESSAGE_SIZE];
             const int message_size =
                     recv(
@@ -75,9 +138,11 @@ void DoJob(
                 if (result.first ==
                     RequestProcessor::RequestProcessingStatus::HttpParserUnknownRequestType)
                 {
-                    break;
+                    close(events[index].data.fd);
+                    continue;
                 }
 
+                #ifdef DEBUG_LOG
                 //////
                 std::cout.write(
                         buffer,
@@ -85,7 +150,7 @@ void DoJob(
                 std::cout << std::endl;
                 //////
 
-                #ifdef DEBUG_LOG
+                
                 std::cout << "result.first = " << static_cast<int>(result.first) << std::endl;
                 #endif
 
@@ -101,17 +166,7 @@ void DoJob(
                     result.second->c_str(),
                     result.second->size() + 1,
                     MSG_NOSIGNAL);
-
-                // shutdown(
-                //     events[index].data.fd,
-                //     SHUT_RDWR);
-
-                // close(events[index].data.fd);
             }
-
-            shutdown(
-                events[index].data.fd,
-                SHUT_RDWR);
 
             close(events[index].data.fd);
         }
@@ -123,14 +178,27 @@ HttpServer::HttpServer(
         const uint16_t port,
         const LoadedDataType loaded_data_type,
         const std::string& loaded_data_path,
-        const size_t threads_count)
-    : ip_address_(ip_address)
+        const size_t threads_count,
+        const bool is_local_launch)
+    : is_local_launch_(is_local_launch)
+    , ip_address_(ip_address)
     , port_(port)
     , threads_count_(threads_count)
 {
     Trace("Data storage data loading...");
 
-    std::shared_ptr<DataStorage> data_storage = std::make_shared<DataStorage>();
+    if (is_local_launch_)
+    {
+        Trace("Current port = {}", port_);
+        Trace("Current ip address = {}", ip_address_);
+    }
+    else
+    {
+        Trace("Current port = 80");
+        Trace("Current ip address = 0.0.0.0"); 
+    }
+
+    std::shared_ptr<IDataStorage> data_storage = std::make_shared<DataStorageNew>();
 
     if (loaded_data_type == LoadedDataType::Zipped)
     {
@@ -151,6 +219,7 @@ HttpServer::HttpServer(
 
 void HttpServer::Run()
 {
+    Trace("HttpServer running...");
     const int master_socket = socket(
         AF_INET,
         SOCK_STREAM,
@@ -158,8 +227,17 @@ void HttpServer::Run()
 
     struct sockaddr_in sock_addr;
     sock_addr.sin_family = AF_INET;
-    sock_addr.sin_port = htons(port_);
-    sock_addr.sin_addr.s_addr = inet_addr(ip_address_.c_str());
+
+    if (is_local_launch_)
+    {
+        sock_addr.sin_port = htons(port_);
+        sock_addr.sin_addr.s_addr = inet_addr(ip_address_.c_str());        
+    }
+    else
+    {
+        sock_addr.sin_port = htons(80);
+        sock_addr.sin_addr.s_addr = htonl(INADDR_ANY);
+    }
     
     bind(master_socket,
         reinterpret_cast<struct sockaddr*>(&sock_addr),
@@ -171,6 +249,7 @@ void HttpServer::Run()
     if (listen_ret == -1)
     {
         // DebugTrace("if (listen_ret == -1)");
+        Trace("if (listen_ret == -1)");
     }
 
     // auto set_nonblock_ret = SetNonblock(master_socket);

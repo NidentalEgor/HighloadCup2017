@@ -22,15 +22,17 @@ public:
             const uint16_t port,
             const LoadedDataType loaded_data_type,
             const std::string& loaded_data_path,
-            const size_t threads_count);
+            const size_t threads_count,
+            const bool is_local_launch);
 
     void Run();
 
 private:
+    bool is_local_launch_;
     std::string ip_address_;
     uint16_t port_;
     uint16_t threads_count_;
-    std::shared_ptr<RequestProcessor> request_processor_;
+    std::shared_ptr<IRequestProcessor> request_processor_;
 };
 
 #endif // HTTP_SERVER_H_INCLUDED

@@ -1,0 +1,1 @@
+LD_PRELOAD=/usr/lib/libtcmalloc.so HEAPPROFILE=../Build/HeapProfiling/Server.heap HEAPPROFILESIGNAL=12 ../Build/Linux/Release/Server --ip 127.0.0.1 --port 1222 --input ../../highload_data_zip/data_full_zipped_good.zip --local --threads 4

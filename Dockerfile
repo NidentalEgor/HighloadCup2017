@@ -16,4 +16,4 @@ RUN cd HighloadCup2017/Build/ && bash build.sh
 
 EXPOSE 80
 
-CMD /HighloadCup2017/Build/Linux/Release/Server 80
+CMD /HighloadCup2017/Build/Linux/Release/Server --ip 0.0.0.0 --port 80 --input /tmp/data/data.zip

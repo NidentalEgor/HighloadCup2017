@@ -1,11 +1,10 @@
-#ifndef DATA_STORAGE_NEW_H_INCLUDED
-#define DATA_STORAGE_NEW_H_INCLUDED
+#ifndef INDEXED_DATA_STORAGE_H_INCLUDED
+#define INDEXED_DATA_STORAGE_H_INCLUDED
 #pragma once
 
 #include <string>
 #include <unordered_map>
 #include <map>
-#include <set>
 #include <memory>
 #include <limits>
 
@@ -16,9 +15,9 @@
 #include "Entities/User.h"
 #include "IDataStorage.h"
 
-class DataStorageNew
-    : public IDataStorage
-    , public Traceable
+class IndexedDataStorage final
+        : public IDataStorage
+        , public Traceable
 {
 public:
     template <typename T>
@@ -29,10 +28,10 @@ public:
 
 public:
     void LoadData(
-            const std::string& folder_path);
+            const std::string& folder_path) override;
     
     void LoadZippedData(
-            const std::string& path_to_zipped_data);
+            const std::string& path_to_zipped_data) override;
 
     size_t GetLocationsAmount() override
     {
@@ -58,9 +57,9 @@ public:
     std::unique_ptr<std::string> GetVisitById(
             const Id visit_id) const override;
 
-//     template <typename T>        
-//     std::unique_ptr<std::string> GetEntityById(
-//             const Id entity_id);
+    template <typename T>        
+    std::unique_ptr<std::string> GetEntityById(
+            const Id entity_id);
 
     std::unique_ptr<std::string> GetVisistsByUserId(
             GetVisistsByUserIdQuery&& query_description) const override;
@@ -68,9 +67,9 @@ public:
     std::unique_ptr<std::string> GetAverageLocationMark(
             GetAverageLocationMarkQuery&& query_description) const override;
 
-//     template<typename T>
-//     UpdateEntityStatus UpdateEntity(
-//             const T& entity);
+    template<typename T>
+    UpdateEntityStatus UpdateEntity(
+            const T& entity);
 
     UpdateEntityStatus UpdateUser(
             const User& user) override;
@@ -90,17 +89,13 @@ public:
     AddEntityStatus AddLocation(
             Location&& location) override;
 
-//     template<typename T>
-//     AddEntityStatus AddEntity(
-//             T&& entity);
+    template<typename T>
+    AddEntityStatus AddEntity(
+            T&& entity);
 
     void DumpData() const override;
 
 private:
-    template <typename T>
-    void AddEntityIntoContainer(
-            T&& entity);
-
     void InitializeUsers(
             const std::string& path_to_zipped_data);
 
@@ -108,10 +103,6 @@ private:
             const std::string& path_to_zipped_data);
 
     void InitializeVisits(
-            const std::string& path_to_zipped_data);
-
-    template <typename T>
-    void InitializeEntity(
             const std::string& path_to_zipped_data);
 
     void MapEntities();
@@ -162,8 +153,11 @@ private:
     Container<Location> locations_;
     Container<User> users_;
     Container<Visit> visits_;
-    std::unordered_map<Id, std::multiset<Id>> users_to_visits_;
-    std::unordered_map<Id, std::multiset<Id>> locations_to_visits_;
+    MappedIndexes visits_to_locations_;
+    MappedIndexes visits_to_user_;
+    MappedMultiIndexes users_to_visits_;
+    MappedMultiIndexes locations_to_visits_;
+    MappedMultiIndexes locations_to_users_;
 };
 
-#endif // DATA_STORAGE_NEW_H_INCLUDED
+#endif // INDEXED_DATA_STORAGE_H_INCLUDED

@@ -78,19 +78,11 @@ public:
     virtual std::unique_ptr<std::string> GetVisitById(
             const Id visit_id) const = 0;
 
-    template <typename T>        
-    std::unique_ptr<std::string> ProcessGetEntityByIdRequest(
-            const Id entity_id);
-
     virtual std::unique_ptr<std::string> GetVisistsByUserId(
-            const GetVisistsByUserIdQuery& query_description) const = 0;
+            GetVisistsByUserIdQuery&& query_description) const = 0;
 
     virtual std::unique_ptr<std::string> GetAverageLocationMark(
-            const GetAverageLocationMarkQuery query_description) const = 0;
-
-    template<typename T>
-    UpdateEntityStatus UpdateEntity(
-            const T& entity);
+            GetAverageLocationMarkQuery&& query_description) const = 0;
 
     virtual UpdateEntityStatus UpdateUser(
             const User& user) = 0;
@@ -109,10 +101,8 @@ public:
 
     virtual AddEntityStatus AddLocation(
             Location&& location) = 0;
-    
-    template<typename T>
-    AddEntityStatus AddEntity(
-            T&& entity);
+
+    virtual void DumpData() const = 0;
 };
 
 #endif // I_DATA_STORAGE_H_INCLUDED

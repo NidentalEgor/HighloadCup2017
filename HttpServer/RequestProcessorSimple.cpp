@@ -37,282 +37,10 @@ static const std::string bad_data_response(
         "Content-Length: 0\r\n"
         "\r\n");
 
-namespace
-{
-
-template <typename T>
-struct AlwaysFalse : std::false_type {};
-
-} // namespace
-
 RequestProcessor::RequestProcessor(
-        const std::shared_ptr<IDataStorage>& data_storage)
+        const std::shared_ptr<DataStorage>& data_storage)
     : data_storage_(data_storage)
 {
-}
-
-template<typename T>
-RequestProcessor::RequestProcessingResult RequestProcessor::ProcessAddEntityRequest(
-        HttpParser& http_parser) const
-{
-    static_assert(
-            AlwaysFalse<T>::value,
-            "RequestProcessor::ProcessAddEntityRequest: unknown type.");
-}
-
-template<>
-RequestProcessor::RequestProcessingResult RequestProcessor::ProcessAddEntityRequest<User>(
-        HttpParser& http_parser) const
-{
-    const auto data =
-            http_parser.GetBodyContent();
-
-    User entity;
-    ENSURE_TRUE_OTHERWISE_RETURN(
-            entity.Validate(data),
-            std::make_pair(
-                RequestProcessingStatus::BadRequest,
-                std::make_unique<std::string>(
-                    bad_data_response)));
-                
-    rapidjson::Document d;
-    d.Parse(data);
-    entity.Deserialize(d);
-
-    ENSURE_TRUE_OTHERWISE_RETURN(
-            data_storage_->AddUser(std::move(entity)) ==
-                IDataStorage::AddEntityStatus::EntitySuccessfullyAdded,
-            std::make_pair(
-                RequestProcessingStatus::BadRequest,
-                std::make_unique<std::string>(
-                    bad_data_response)));
-
-    return std::make_pair(
-            RequestProcessingStatus::Ok,
-            std::make_unique<std::string>(empty_ok_response));
-}
-
-template<>
-RequestProcessor::RequestProcessingResult RequestProcessor::ProcessAddEntityRequest<Location>(
-        HttpParser& http_parser) const
-{
-    const auto data =
-            http_parser.GetBodyContent();
-
-    Location entity;
-    ENSURE_TRUE_OTHERWISE_RETURN(
-            entity.Validate(data),
-            std::make_pair(
-                RequestProcessingStatus::BadRequest,
-                std::make_unique<std::string>(
-                    bad_data_response)));
-                
-    rapidjson::Document d;
-    d.Parse(data);
-    entity.Deserialize(d);
-
-    ENSURE_TRUE_OTHERWISE_RETURN(
-            data_storage_->AddLocation(std::move(entity)) ==
-                IDataStorage::AddEntityStatus::EntitySuccessfullyAdded,
-            std::make_pair(
-                RequestProcessingStatus::BadRequest,
-                std::make_unique<std::string>(
-                    bad_data_response)));
-
-    return std::make_pair(
-            RequestProcessingStatus::Ok,
-            std::make_unique<std::string>(empty_ok_response));
-}
-
-template<>
-RequestProcessor::RequestProcessingResult RequestProcessor::ProcessAddEntityRequest<Visit>(
-        HttpParser& http_parser) const
-{
-    const auto data =
-            http_parser.GetBodyContent();
-
-    Visit entity;
-    ENSURE_TRUE_OTHERWISE_RETURN(
-            entity.Validate(data),
-            std::make_pair(
-                RequestProcessingStatus::BadRequest,
-                std::make_unique<std::string>(
-                    bad_data_response)));
-                
-    rapidjson::Document d;
-    d.Parse(data);
-    entity.Deserialize(d);
-
-    ENSURE_TRUE_OTHERWISE_RETURN(
-            data_storage_->AddVisit(std::move(entity)) ==
-                IDataStorage::AddEntityStatus::EntitySuccessfullyAdded,
-            std::make_pair(
-                RequestProcessingStatus::BadRequest,
-                std::make_unique<std::string>(
-                    bad_data_response)));
-
-    return std::make_pair(
-            RequestProcessingStatus::Ok,
-            std::make_unique<std::string>(empty_ok_response));
-}
-
-template<typename T>
-std::pair<bool, std::unique_ptr<T>> RequestProcessor::FillEntityToUpdate(
-        HttpParser& http_parser) const
-{
-    static_assert(
-            AlwaysFalse<T>::value,
-            "RequestProcessor::FillEntityToUpdate: unknown type.");
-}
-
-template<>
-std::pair<bool, std::unique_ptr<User>> RequestProcessor::FillEntityToUpdate<User>(
-        HttpParser& http_parser) const
-{
-    return FillUserToUpdate(http_parser);
-}
-
-template<>
-std::pair<bool, std::unique_ptr<Location>> RequestProcessor::FillEntityToUpdate<Location>(
-        HttpParser& http_parser) const
-{
-    return FillLocationToUpdate(http_parser);
-}
-
-template<>
-std::pair<bool, std::unique_ptr<Visit>> RequestProcessor::FillEntityToUpdate<Visit>(
-        HttpParser& http_parser) const
-{
-    return FillVisitToUpdate(http_parser);
-}
-
-template<typename T>
-RequestProcessor::RequestProcessingResult RequestProcessor::ProcessUpdateEntityRequest(
-        HttpParser& http_parser) const
-{
-    static_assert(
-            AlwaysFalse<T>::value,
-            "RequestProcessor::ProcessUpdateEntityRequest: unknown type.");
-}
-
-template<>
-RequestProcessor::RequestProcessingResult RequestProcessor::ProcessUpdateEntityRequest<User>(
-        HttpParser& http_parser) const
-{
-    const auto entity_to_update_filling_result =
-            FillEntityToUpdate<User>(http_parser);
-
-    ENSURE_TRUE_OTHERWISE_RETURN(
-            entity_to_update_filling_result.first,
-            std::make_pair(
-                RequestProcessingStatus::BadRequest,
-                std::make_unique<std::string>(
-                    bad_data_response)));
-
-    ENSURE_TRUE_OTHERWISE_RETURN(
-            data_storage_->UpdateUser(*entity_to_update_filling_result.second) ==
-                IDataStorage::UpdateEntityStatus::EntitySuccessfullyUpdated,
-            std::make_pair(
-                RequestProcessingStatus::NotFound,
-                std::make_unique<std::string>(
-                    not_found_response)));
-
-    return std::make_pair(
-            RequestProcessingStatus::Ok,
-            std::make_unique<std::string>(empty_ok_response));
-}
-
-template<>
-RequestProcessor::RequestProcessingResult RequestProcessor::ProcessUpdateEntityRequest<Location>(
-        HttpParser& http_parser) const
-{
-    const auto entity_to_update_filling_result =
-            FillEntityToUpdate<Location>(http_parser);
-
-    ENSURE_TRUE_OTHERWISE_RETURN(
-            entity_to_update_filling_result.first,
-            std::make_pair(
-                RequestProcessingStatus::BadRequest,
-                std::make_unique<std::string>(
-                    bad_data_response)));
-
-    ENSURE_TRUE_OTHERWISE_RETURN(
-            data_storage_->UpdateLocation(*entity_to_update_filling_result.second) ==
-                IDataStorage::UpdateEntityStatus::EntitySuccessfullyUpdated,
-            std::make_pair(
-                RequestProcessingStatus::NotFound,
-                std::make_unique<std::string>(
-                    not_found_response)));
-
-    return std::make_pair(
-            RequestProcessingStatus::Ok,
-            std::make_unique<std::string>(empty_ok_response));
-}
-
-template<>
-RequestProcessor::RequestProcessingResult RequestProcessor::ProcessUpdateEntityRequest<Visit>(
-        HttpParser& http_parser) const
-{
-    const auto entity_to_update_filling_result =
-            FillEntityToUpdate<Visit>(http_parser);
-
-    ENSURE_TRUE_OTHERWISE_RETURN(
-            entity_to_update_filling_result.first,
-            std::make_pair(
-                RequestProcessingStatus::BadRequest,
-                std::make_unique<std::string>(
-                    bad_data_response)));
-
-    ENSURE_TRUE_OTHERWISE_RETURN(
-            data_storage_->UpdateVisit(*entity_to_update_filling_result.second) ==
-                IDataStorage::UpdateEntityStatus::EntitySuccessfullyUpdated,
-            std::make_pair(
-                RequestProcessingStatus::NotFound,
-                std::make_unique<std::string>(
-                    not_found_response)));
-
-    return std::make_pair(
-            RequestProcessingStatus::Ok,
-            std::make_unique<std::string>(empty_ok_response));
-}
-
-template<>
-RequestProcessor::RequestProcessingResult RequestProcessor::ProcessGetEntityByIdRequest<User>(
-        const Id entity_id) const
-{
-    auto entity =
-            data_storage_->GetUserById(entity_id);
-
-    return CommonGetEntity(std::move(entity));
-}
-
-template<>
-RequestProcessor::RequestProcessingResult RequestProcessor::ProcessGetEntityByIdRequest<Location>(
-        const Id entity_id) const
-{
-    auto entity =
-            data_storage_->GetLocationById(entity_id);
-
-    return CommonGetEntity(std::move(entity));
-}
-
-template<>
-RequestProcessor::RequestProcessingResult RequestProcessor::ProcessGetEntityByIdRequest<Visit>(
-        const Id entity_id) const
-{
-    auto entity =
-            data_storage_->GetVisitById(entity_id);
-
-    return CommonGetEntity(std::move(entity));
-}
-
-template <typename T>        
-RequestProcessor::RequestProcessingResult RequestProcessor::ProcessGetEntityByIdRequest(
-        const Id entity_id) const
-{
-    static_assert(
-            AlwaysFalse<T>::value,
-            "RequestProcessor::ProcessGetEntityByIdRequest: unknown type.");
 }
 
 RequestProcessor::RequestProcessingResult RequestProcessor::ProcessRequest(
@@ -419,10 +147,13 @@ RequestProcessor::RequestProcessingResult RequestProcessor::ProcessRequest(
                 nullptr);
 }
 
-template <typename T>
-RequestProcessor::RequestProcessingResult RequestProcessor::CommonGetEntity(
-        T&& entity) const
+template <typename T>        
+RequestProcessor::RequestProcessingResult RequestProcessor::ProcessGetEntityByIdRequest(
+        const Id entity_id) const
 {
+    const auto entity =
+            data_storage_->GetEntityById<T>(entity_id);
+
     ENSURE_TRUE_OTHERWISE_RETURN(
             entity != nullptr,
             std::make_pair(
@@ -442,10 +173,12 @@ RequestProcessor::RequestProcessingResult RequestProcessor::CommonGetEntity(
 RequestProcessor::RequestProcessingResult RequestProcessor::ProcessAverageLocationMarkRequest(
         const HttpParser& http_parser) const
 {
+    const auto query =
+            FillAverageLocationMarkQuery(
+                http_parser);
+
     const auto average_location_mark =
-            data_storage_->GetAverageLocationMark(
-                FillAverageLocationMarkQuery(
-                    http_parser));
+            data_storage_->GetAverageLocationMark(query);
     
     ENSURE_TRUE_OTHERWISE_RETURN(
             average_location_mark,
@@ -463,10 +196,10 @@ RequestProcessor::RequestProcessingResult RequestProcessor::ProcessAverageLocati
                     *average_location_mark)));
 }
 
-IDataStorage::GetAverageLocationMarkQuery RequestProcessor::FillAverageLocationMarkQuery(
+DataStorage::GetAverageLocationMarkQuery RequestProcessor::FillAverageLocationMarkQuery(
         const HttpParser& http_parser) const
 {
-    IDataStorage::GetAverageLocationMarkQuery query(http_parser.GetEntityId());
+    DataStorage::GetAverageLocationMarkQuery query(http_parser.GetEntityId());
 
     const int mask =
             http_parser.GetAdditionalInfoMask();
@@ -501,10 +234,11 @@ IDataStorage::GetAverageLocationMarkQuery RequestProcessor::FillAverageLocationM
 RequestProcessor::RequestProcessingResult RequestProcessor::ProcessGetVisitsByUserIdRequest(
         const HttpParser& http_parser) const
 {
+    const auto query =
+            FillVisistsByUserIdQuery(http_parser);
+
     const auto visits =
-            data_storage_->GetVisistsByUserId(
-                FillVisistsByUserIdQuery(
-                    http_parser));
+            data_storage_->GetVisistsByUserId(query);
 
     ENSURE_TRUE_OTHERWISE_RETURN(
             visits != nullptr,
@@ -522,10 +256,10 @@ RequestProcessor::RequestProcessingResult RequestProcessor::ProcessGetVisitsByUs
                     *visits)));
 }
 
-IDataStorage::GetVisistsByUserIdQuery RequestProcessor::FillVisistsByUserIdQuery(
+DataStorage::GetVisistsByUserIdQuery RequestProcessor::FillVisistsByUserIdQuery(
         const HttpParser& http_parser) const
 {
-    IDataStorage::GetVisistsByUserIdQuery query(http_parser.GetEntityId());
+    DataStorage::GetVisistsByUserIdQuery query(http_parser.GetEntityId());
 
     const int mask =
             http_parser.GetAdditionalInfoMask();
@@ -550,6 +284,61 @@ IDataStorage::GetVisistsByUserIdQuery RequestProcessor::FillVisistsByUserIdQuery
     }
 
     return query;
+}
+
+template<typename T>
+std::pair<bool, std::unique_ptr<T>> RequestProcessor::FillEntityToUpdate(
+        HttpParser& http_parser) const
+{
+    // Compile time error for unknown type.
+}
+
+template<>
+std::pair<bool, std::unique_ptr<User>> RequestProcessor::FillEntityToUpdate<User>(
+        HttpParser& http_parser) const
+{
+    return FillUserToUpdate(http_parser);
+}
+
+template<>
+std::pair<bool, std::unique_ptr<Location>> RequestProcessor::FillEntityToUpdate<Location>(
+        HttpParser& http_parser) const
+{
+    return FillLocationToUpdate(http_parser);
+}
+
+template<>
+std::pair<bool, std::unique_ptr<Visit>> RequestProcessor::FillEntityToUpdate<Visit>(
+        HttpParser& http_parser) const
+{
+    return FillVisitToUpdate(http_parser);
+}
+
+template<typename T>
+RequestProcessor::RequestProcessingResult RequestProcessor::ProcessUpdateEntityRequest(
+        HttpParser& http_parser) const
+{
+    const auto entity_to_update_filling_result =
+            FillEntityToUpdate<T>(http_parser);
+
+    ENSURE_TRUE_OTHERWISE_RETURN(
+            entity_to_update_filling_result.first,
+            std::make_pair(
+                RequestProcessingStatus::BadRequest,
+                std::make_unique<std::string>(
+                    bad_data_response)));
+
+    ENSURE_TRUE_OTHERWISE_RETURN(
+            data_storage_->UpdateEntity<T>(*entity_to_update_filling_result.second) ==
+                DataStorage::UpdateEntityStatus::EntitySuccessfullyUpdated,
+            std::make_pair(
+                RequestProcessingStatus::NotFound,
+                std::make_unique<std::string>(
+                    not_found_response)));
+
+    return std::make_pair(
+            RequestProcessingStatus::Ok,
+            std::make_unique<std::string>(empty_ok_response));
 }
 
 std::pair<bool, std::unique_ptr<User>> RequestProcessor::FillUserToUpdate(
@@ -710,4 +499,36 @@ std::pair<bool, std::unique_ptr<Visit>> RequestProcessor::FillVisitToUpdate(
     return std::make_pair(
             true,
             std::make_unique<Visit>(visit_to_update));
+}
+
+template<typename T>
+RequestProcessor::RequestProcessingResult RequestProcessor::ProcessAddEntityRequest(
+        HttpParser& http_parser) const
+{
+    const auto data =
+            http_parser.GetBodyContent();
+
+    T entity;
+    ENSURE_TRUE_OTHERWISE_RETURN(
+            entity.Validate(data),
+            std::make_pair(
+                RequestProcessingStatus::BadRequest,
+                std::make_unique<std::string>(
+                    bad_data_response)));
+                
+    rapidjson::Document d;
+    d.Parse(data);
+    entity.Deserialize(d);
+
+    ENSURE_TRUE_OTHERWISE_RETURN(
+            data_storage_->AddEntity<T>(std::move(entity)) ==
+                DataStorage::AddEntityStatus::EntitySuccessfullyAdded,
+            std::make_pair(
+                RequestProcessingStatus::BadRequest,
+                std::make_unique<std::string>(
+                    bad_data_response)));
+
+    return std::make_pair(
+            RequestProcessingStatus::Ok,
+            std::make_unique<std::string>(empty_ok_response));
 }

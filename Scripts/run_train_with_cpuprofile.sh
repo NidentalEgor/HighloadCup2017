@@ -1,0 +1,1 @@
+PROFILEFREQUENCY=10000 LD_PRELOAD=/usr/lib/libprofiler.so.0 CPUPROFILE=../Build/CpuProfiling/Server.prof CPUPROFILESIGNAL=12 ../Build/Linux/Release/Server --ip 127.0.0.1 --port 1222 --input ../../highload_data_zip/data_train_good.zip --local --threads 4

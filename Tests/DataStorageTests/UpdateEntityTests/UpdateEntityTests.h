@@ -1,8 +1,9 @@
 #include "gtest/gtest.h"
 #include "../../../Submodules/rapidjson/include/rapidjson/document.h"
 
-#include "../../../DataStorage/DataStorage.h"
+#include "../../TimeMeasurableTest.h"
 #include "../../TestDataLoadableTest.h"
+#include "../../JsonComparableTest.h"
 
 class UpdateEntityTests
     : public TestDataLoadableTest
@@ -59,27 +60,27 @@ TEST_F(UpdateEntityTests, UpdateNonexistentEntitiesTest)
 
     // Test for user.
     const size_t users_amount_before_update =
-            data_storage_.GetUsersAmount();
+            data_storage_->GetUsersAmount();
     const auto user_update_result =
-            data_storage_.UpdateUser(GetUserToUpdate());
-    ASSERT_EQ(users_amount_before_update, data_storage_.GetUsersAmount());
-    ASSERT_EQ(user_update_result, DataStorage::UpdateEntityStatus::EntityNotFound);
+            data_storage_->UpdateUser(GetUserToUpdate());
+    ASSERT_EQ(users_amount_before_update, data_storage_->GetUsersAmount());
+    ASSERT_EQ(user_update_result, IDataStorage::UpdateEntityStatus::EntityNotFound);
 
     // Test for visit.
     const size_t visits_amount_before_update =
-            data_storage_.GetVisitsAmount();
+            data_storage_->GetVisitsAmount();
     const auto visit_update_result =
-            data_storage_.UpdateVisit(GetVisitToUpdate());
-    ASSERT_EQ(visits_amount_before_update, data_storage_.GetVisitsAmount());
-    ASSERT_EQ(visit_update_result, DataStorage::UpdateEntityStatus::EntityNotFound);
+            data_storage_->UpdateVisit(GetVisitToUpdate());
+    ASSERT_EQ(visits_amount_before_update, data_storage_->GetVisitsAmount());
+    ASSERT_EQ(visit_update_result, IDataStorage::UpdateEntityStatus::EntityNotFound);
 
     // Test for location.
     const size_t locations_amount_before_update =
-            data_storage_.GetLocationsAmount();
+            data_storage_->GetLocationsAmount();
     const auto location_update_result =
-            data_storage_.UpdateLocation(GetLocationToUpdate());
-    ASSERT_EQ(locations_amount_before_update, data_storage_.GetLocationsAmount());
-    ASSERT_EQ(location_update_result, DataStorage::UpdateEntityStatus::EntityNotFound);
+            data_storage_->UpdateLocation(GetLocationToUpdate());
+    ASSERT_EQ(locations_amount_before_update, data_storage_->GetLocationsAmount());
+    ASSERT_EQ(location_update_result, IDataStorage::UpdateEntityStatus::EntityNotFound);
 }
 
 TEST_F(UpdateEntityTests, UpdateExistingUserTest)
@@ -87,14 +88,14 @@ TEST_F(UpdateEntityTests, UpdateExistingUserTest)
     LoadData("UpdateExistingUserTest/");
 
     const size_t users_amount_before_update =
-            data_storage_.GetUsersAmount();
+            data_storage_->GetUsersAmount();
 
     const auto user_update_result =
-            data_storage_.UpdateUser(GetUserToUpdate());
-    ASSERT_EQ(users_amount_before_update, data_storage_.GetUsersAmount());
-    ASSERT_EQ(user_update_result, DataStorage::UpdateEntityStatus::EntitySuccessfullyUpdated);
+            data_storage_->UpdateUser(GetUserToUpdate());
+    ASSERT_EQ(users_amount_before_update, data_storage_->GetUsersAmount());
+    ASSERT_EQ(user_update_result, IDataStorage::UpdateEntityStatus::EntitySuccessfullyUpdated);
 
-    const auto updated_user = data_storage_.GetUserById(entity_id);
+    const auto updated_user = data_storage_->GetUserById(entity_id);
     ASSERT_NE(updated_user, nullptr);
     AssertEqualJsonDocuments(
             *updated_user,
@@ -107,14 +108,14 @@ TEST_F(UpdateEntityTests, UpdateExistingVisitTest)
     LoadData("UpdateExistingVisitTest/");
     
     const size_t visits_amount_before_update =
-            data_storage_.GetVisitsAmount();
+            data_storage_->GetVisitsAmount();
 
     const auto visit_update_result =
-            data_storage_.UpdateVisit(GetVisitToUpdate());
-    ASSERT_EQ(visits_amount_before_update, data_storage_.GetVisitsAmount());
-    ASSERT_EQ(visit_update_result, DataStorage::UpdateEntityStatus::EntitySuccessfullyUpdated);
+            data_storage_->UpdateVisit(GetVisitToUpdate());
+    ASSERT_EQ(visits_amount_before_update, data_storage_->GetVisitsAmount());
+    ASSERT_EQ(visit_update_result, IDataStorage::UpdateEntityStatus::EntitySuccessfullyUpdated);
 
-    const auto updated_visit = data_storage_.GetVisitById(entity_id);
+    const auto updated_visit = data_storage_->GetVisitById(entity_id);
     ASSERT_NE(updated_visit, nullptr);
 
     AssertEqualJsonDocuments(
@@ -127,14 +128,14 @@ TEST_F(UpdateEntityTests, UpdateExistingLocationTest)
     LoadData("UpdateExistingLocationTest/");
     
     const size_t locations_amount_before_update =
-            data_storage_.GetLocationsAmount();
+            data_storage_->GetLocationsAmount();
 
     const auto location_update_result =
-            data_storage_.UpdateLocation(GetLocationToUpdate());
-    ASSERT_EQ(locations_amount_before_update, data_storage_.GetLocationsAmount());
-    ASSERT_EQ(location_update_result, DataStorage::UpdateEntityStatus::EntitySuccessfullyUpdated);
+            data_storage_->UpdateLocation(GetLocationToUpdate());
+    ASSERT_EQ(locations_amount_before_update, data_storage_->GetLocationsAmount());
+    ASSERT_EQ(location_update_result, IDataStorage::UpdateEntityStatus::EntitySuccessfullyUpdated);
 
-    const auto updated_location = data_storage_.GetLocationById(entity_id);
+    const auto updated_location = data_storage_->GetLocationById(entity_id);
     ASSERT_NE(updated_location, nullptr);
     AssertEqualJsonDocuments(
             *updated_location,

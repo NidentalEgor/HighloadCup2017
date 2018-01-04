@@ -11,7 +11,8 @@ class TestDataLoadableTest
 public:
     TestDataLoadableTest(
             const std::string& test_data_folder_path)
-        : test_data_folder_path_(test_data_folder_path)
+        : data_storage_(std::make_unique<DataStorageNew>())
+        , test_data_folder_path_(test_data_folder_path)
     {
     }
 
@@ -20,11 +21,13 @@ public:
 protected:
     void LoadData(const std::string& test_data_folder_name)
     {
-        data_storage_.LoadData(test_data_folder_path_ + test_data_folder_name);
+        data_storage_->LoadData(
+                test_data_folder_path_ + test_data_folder_name);
     }
 
 protected:
-    DataStorage data_storage_;
+    // DataStorage data_storage_;
+    std::unique_ptr<IDataStorage> data_storage_;
     const std::string test_data_folder_path_;
 };
 
