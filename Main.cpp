@@ -6,14 +6,6 @@
 
 int main(int argc, char* argv[])
 {
-    std::cout << "Starting..." << std::endl;
-    
-    std::cout << "argc = " << argc << std::endl;
-    for (size_t i = 0; i < argc; ++i)
-    {
-        std::cout << "argv[" << i << "] = " << argv[i] << std::endl;
-    }
-
     boost::program_options::options_description command_line_options_descriptions(
         "Allowed options");
 
